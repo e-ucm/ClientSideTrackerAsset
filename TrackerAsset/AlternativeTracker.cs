@@ -34,7 +34,7 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
         tracker.Trace(new TrackerAsset.TrackerEvent()
         {
             Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), optionId),
+            Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), alternativeId),
             Result = new TrackerAsset.TrackerEvent.TraceResult()
             {
                 Response = optionId
@@ -53,7 +53,7 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
         tracker.Trace(new TrackerAsset.TrackerEvent()
         {
             Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), optionId),
+            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), alternativeId),
             Result = new TrackerAsset.TrackerEvent.TraceResult()
             {
                 Response = optionId
@@ -72,7 +72,7 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
         tracker.Trace(new TrackerAsset.TrackerEvent()
         {
             Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Unlocked),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), optionId),
+            Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), alternativeId),
             Result = new TrackerAsset.TrackerEvent.TraceResult()
             {
                 Response = optionId
@@ -91,7 +91,7 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
         tracker.Trace(new TrackerAsset.TrackerEvent()
         {
             Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Unlocked),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), optionId),
+            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), alternativeId),
             Result = new TrackerAsset.TrackerEvent.TraceResult()
             {
                 Response = optionId

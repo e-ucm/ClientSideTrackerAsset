@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AssetPackage</RootNamespace>
     <AssemblyName>TrackerAsset</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile>
@@ -87,10 +87,6 @@
     <ProjectReference Include="..\RageAssetManager\RageAssetManager.csproj">
       <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
       <Name>RageAssetManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RageAssetManager_Portable\RageAssetManager - Portable.csproj">
-      <Project>{7f2712c1-575c-4883-88aa-e5b31070354f}</Project>
-      <Name>RageAssetManager - Portable</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

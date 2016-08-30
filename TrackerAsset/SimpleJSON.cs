@@ -455,12 +455,9 @@ namespace SimpleJSON
         {
             throw new Exception("Can't use compressed functions. You need include the SharpZipLib and uncomment the define at the top of SimpleJSON");
         }
-#endif
-
-        /*
-         * These file access related functions cant be used in portable libraries
-         * as they need to use specific OS libraries
-         * public void SaveToFile(string aFileName)
+        #endif
+        
+        public void SaveToFile(string aFileName)
         {
             #if USE_FileIO
             System.IO.Directory.CreateDirectory((new System.IO.FileInfo(aFileName)).Directory.FullName);
@@ -471,7 +468,7 @@ namespace SimpleJSON
             #else
             throw new Exception("Can't use File IO stuff in webplayer");
             #endif
-        }*/
+        }
         public string SaveToBase64()
         {
             using (var stream = new System.IO.MemoryStream())
@@ -580,11 +577,7 @@ namespace SimpleJSON
                 return Deserialize(R);
             }
         }
-        /*
-         * These file access related functions cant be used in portable libraries
-         * as they need to use specific OS libraries
-         * 
-         * public static JSONNode LoadFromFile(string aFileName)
+        public static JSONNode LoadFromFile(string aFileName)
         {
             #if USE_FileIO
             using(var F = System.IO.File.OpenRead(aFileName))
@@ -594,7 +587,7 @@ namespace SimpleJSON
             #else
             throw new Exception("Can't use File IO stuff in webplayer");
             #endif
-        }*/
+        }
         public static JSONNode LoadFromBase64(string aBase64)
         {
             var tmp = System.Convert.FromBase64String(aBase64);

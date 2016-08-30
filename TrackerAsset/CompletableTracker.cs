@@ -153,6 +153,25 @@ public class CompletableTracker : TrackerAsset.IGameObjectTracker
     /// </summary>
     /// <param name="completableId">Completable identifier.</param>
     /// <param name="type">Completable type.</param>
+    /// <param name="score">Completable score.</param>
+    public void Completed(string completableId, Completable type, float score)
+    {
+        tracker.Trace(new TrackerAsset.TrackerEvent()
+        {
+            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Completed),
+            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), completableId),
+            Result = new TrackerAsset.TrackerEvent.TraceResult()
+            {
+                Score = score
+            }
+        });
+    }
+
+    /// <summary>
+    /// Player completed a completable.
+    /// </summary>
+    /// <param name="completableId">Completable identifier.</param>
+    /// <param name="type">Completable type.</param>
     /// <param name="success">Completable success.</param>
     /// <param name="score">Completable score.</param>
     public void Completed(string completableId, Completable type, bool success, float score)

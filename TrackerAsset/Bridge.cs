@@ -40,7 +40,7 @@ namespace UserModel
 
     // 
     using AssetPackage;
-    class Bridge : IBridge, IDataStorage, IWebServiceRequest, ILog
+    public class Bridge : IBridge, IDataStorage, IWebServiceRequest, ILog
     {
         readonly String StorageDir = String.Format(@".{0}DataStorage", Path.DirectorySeparatorChar);
         /// <summary>
@@ -285,11 +285,11 @@ namespace UserModel
             {
                 if (String.IsNullOrEmpty(msg))
                 {
-                    Debug.WriteLine("");
+                    Console.WriteLine("");
                 }
                 else
                 {
-                    Debug.WriteLine(String.Format("{0}: {1}", severity, msg));
+                    Console.WriteLine(String.Format("{0}: {1}", severity, msg));
                 }
             }
         }
