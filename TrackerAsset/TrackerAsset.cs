@@ -1011,13 +1011,13 @@ namespace AssetPackage
                     switch (settings.TraceFormat)
                     {
                         case TraceFormats.json:
-                            sb.Add(item.ToJson().ToString());
+                            sb.Add(item.ToJson());
                             break;
                         case TraceFormats.xml:
                             sb.Add(item.ToXml());
                             break;
                         case TraceFormats.xapi:
-                            sb.Add(item.ToXapi().ToString());
+                            sb.Add(item.ToXapi());
                             break;
                         default:
                             sb.Add(item.ToCsv());
@@ -1029,6 +1029,9 @@ namespace AssetPackage
 
                 switch (settings.TraceFormat)
                 {
+                    case TraceFormats.csv:
+                        data = String.Join("\r\n", sb.ToArray()) + "\r\n";
+                        break;
                     case TraceFormats.json:
                         data = "[\r\n" + String.Join(",\r\n", sb.ToArray()) + "\r\n]";
                         break;
@@ -1056,8 +1059,12 @@ namespace AssetPackage
                         {
                             String previous = storage.Exists(settings.LogFile) ? storage.Load(settings.LogFile) : String.Empty;
 
+                            if (previous.Length > 0) {
+                                previous = previous.Replace("\r\n]", ",\r\n");
+                                data = data.Replace("[\r\n", "");
+                            }
+
 #warning TODO Add Append() to IDataStorage using File.AppendAllText().
-#warning TODO Append is not 100% correct for XML and JSON (we need to insert it into the array).
 
                             storage.Save(settings.LogFile, previous + data);
                         }
@@ -1165,6 +1172,7 @@ namespace AssetPackage
             public TrackerEvent()
             {
                 this.TimeStamp = Math.Round(System.DateTime.Now.ToUniversalTime().Subtract(START_DATE).TotalMilliseconds);
+                this.Result = new TraceResult();
             }
 
             #endregion Constructors
@@ -1323,7 +1331,7 @@ namespace AssetPackage
             /// <returns>
             /// This object as a string.
             /// </returns>
-            public JSONClass ToJson()
+            public string ToJson()
             {
                 JSONClass json = new JSONClass();
 
@@ -1337,7 +1345,7 @@ namespace AssetPackage
 
                 json.Add("timestamp", new JSONData(new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc).AddMilliseconds(TimeStamp).ToString("yyyy-MM-ddTHH:mm:ss.fffZ")));
 
-                return json;
+                return json.ToString();
             }
 
             /// <summary>
@@ -1365,7 +1373,7 @@ namespace AssetPackage
             /// <returns>
             /// This object as a string.
             /// </returns>
-            internal JSONClass ToXapi()
+            public string ToXapi()
             {
                 JSONClass json = new JSONClass();
 
@@ -1373,13 +1381,16 @@ namespace AssetPackage
                 json.Add("verb", Event.ToJson());
                 json.Add("object", Target.ToJson());
 
-                JSONClass result = Result.ToJson();
-                if(result.Count > 0)
-                    json.Add("result", result);
+                if (Result != null)
+                {
+                    JSONClass result = Result.ToJson();
+                    if (result.Count > 0)
+                        json.Add("result", result);
+                }
 
                 json.Add("timestamp", new JSONData(new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc).AddMilliseconds(TimeStamp).ToString("yyyy-MM-ddTHH:mm:ss.fffZ")));
 
-                return json;
+                return json.ToString();
             }
 
             /// <summary>
@@ -1591,7 +1602,7 @@ namespace AssetPackage
 
                     if (Extensions != null)
                         foreach (KeyValuePair<string, System.Object> extension in Extensions)
-                            result += "," + extension.Key + "," + ((extension.Value != null) ? extension.Value.ToString() : "");
+                            result += "," + extension.Key + "," + ((extension.Value != null) ? extension.Value.ToString().Replace(",",".") : "");
 
 
                     return result.Length > 0 ? result.Substring(1) : result;
@@ -1611,7 +1622,7 @@ namespace AssetPackage
                         result.Add("response", new JSONData(Response));
 
                     if (!float.IsNaN(score))
-                        result.Add("response", new JSONData(score));
+                        result.Add("score", new JSONData(score));
 
                     if (Extensions != null) {
 
@@ -1647,7 +1658,7 @@ namespace AssetPackage
                         result.Add("response", new JSONData(Response));
 
                     if (!float.IsNaN(score))
-                        result.Add("response", new JSONData(score));
+                        result.Add("score", new JSONData(score));
 
                     if (Extensions != null)
                     {
