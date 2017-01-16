@@ -86,18 +86,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RageAssetManager\RageAssetManager.csproj">
-      <Project>{da8e9056-2e52-4029-81eb-a2d167614c47}</Project>
-      <Name>RageAssetManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TrackerAssetUnitTests\TrackerAssetUnitTests.csproj">
-      <Project>{7487b192-6a32-4f3d-8a61-269b5e359d31}</Project>
-      <Name>TrackerAssetUnitTests</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TrackerAsset\TrackerAsset.csproj">
-      <Project>{616fd8ce-87e2-4cef-8a64-0995edf3d9ce}</Project>
-      <Name>TrackerAsset</Name>
-    </ProjectReference>
+    <Reference Include="RageAssetManager">
+      <HintPath>..\..\AssetManager\RageAssetManager\bin\Debug\RageAssetManager.dll</HintPath>
+    </Reference>
+    <Reference Include="TrackerAsset">
+      <HintPath>..\TrackerAsset\bin\Debug\TrackerAsset.dll</HintPath>
+    </Reference>
+    <Reference Include="TrackerAssetUnitTests">
+      <HintPath>..\TrackerAssetUnitTests\bin\Debug\TrackerAssetUnitTests.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
