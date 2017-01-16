@@ -177,9 +177,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/game-object");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/accessed");
@@ -197,13 +197,13 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(tracejson.Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/serious-game");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Childs).Count, 2);
+            Assert.AreEqual(tracejson["result"].Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
             Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 0.123f);
         }
@@ -220,20 +220,20 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID3");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/zone");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/selected");
 
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 5);
             Assert.AreEqual(tracejson["result"]["response"].Value, "AnotherResponse");
             Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 123.456f);
             Assert.AreEqual(bool.Parse(tracejson["result"]["completion"].Value), true);
             Assert.AreEqual(bool.Parse(tracejson["result"]["success"].Value), false);
 
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Children).Count, 4);
             Assert.AreEqual(tracejson["result"]["extensions"]["extension1"].Value, "value1");
             Assert.AreEqual(tracejson["result"]["extensions"]["extension2"].Value, "value2");
             Assert.AreEqual(int.Parse(tracejson["result"]["extensions"]["extension3"].Value), 3);
@@ -257,12 +257,12 @@
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
 
-            Assert.AreEqual(new List<JSONNode>(file.Childs).Count, 3);
+            Assert.AreEqual(new List<JSONNode>(file.Children).Count, 3);
 
             //CHECK THE 1ST TRACe
             JSONNode tracejson = file[0];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/game-object");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/accessed");
@@ -270,29 +270,29 @@
             //CHECK THE 2ND TRACE
             tracejson = file[1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/serious-game");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Childs).Count, 2);
+            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
             Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 0.123f);
 
             //CHECK THE 3RD TRACE
             tracejson = file[2];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID3");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/zone");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/selected");
 
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 5);
             Assert.AreEqual(tracejson["result"]["response"].Value, "AnotherResponse");
             Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 123.456f);
             Assert.AreEqual(bool.Parse(tracejson["result"]["completion"].Value), true);
             Assert.AreEqual(bool.Parse(tracejson["result"]["success"].Value), false);
 
-            Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Children).Count, 4);
             Assert.AreEqual(tracejson["result"]["extensions"]["extension1"].Value, "value1");
             Assert.AreEqual(tracejson["result"]["extensions"]["extension2"].Value, "value2");
             Assert.AreEqual(int.Parse(tracejson["result"]["extensions"]["extension3"].Value), 3);
@@ -346,9 +346,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "AccesibleID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/cutscene");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/accessed");
@@ -367,9 +367,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "AccesibleID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/screen");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://id.tincanapi.com/verb/skipped");
@@ -423,9 +423,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "AlternativeID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/path");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/selected");
@@ -445,9 +445,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "AlternativeID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "http://adlnet.gov/expapi/activities/question");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/unlocked");
@@ -518,9 +518,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/quest");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
@@ -538,9 +538,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/stage");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/progressed");
@@ -559,9 +559,10 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
+            Console.WriteLine("teadadas");
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 5);
+            Assert.AreEqual(tracejson.Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID3");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/race");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/completed");
@@ -615,9 +616,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "GameObjectID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/non-player-character");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/interacted");
@@ -635,9 +636,9 @@
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
-            JSONNode tracejson = file[new List<JSONNode>(file.Childs).Count - 1];
+            JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
 
-            Assert.AreEqual(new List<JSONNode>(tracejson.Childs).Count, 4);
+            Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "GameObjectID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/item");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/used");
