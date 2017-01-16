@@ -145,7 +145,7 @@
             string csv = storage.Load(settings.LogFile);
             string[] splitted = csv.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
-            Assert.AreEqual(splitted[splitted.Length - 2], trace02.TimeStamp.ToString() + ",initialized,game,ObjectID2,TheResponse,0.123");
+            Assert.AreEqual(splitted[splitted.Length - 2], trace02.TimeStamp.ToString() + ",initialized,game,ObjectID2,response,TheResponse,score,0.123");
         }
 
         /// <summary>
@@ -162,7 +162,7 @@
             string csv = storage.Load(settings.LogFile);
             string[] splitted = csv.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
-            Assert.AreEqual(splitted[splitted.Length - 2], trace02.TimeStamp.ToString() + ",selected,zone,ObjectID3,false,true,AnotherResponse,123.456,extension1,value1,extension2,value2,extension3,3,extension4,4.56");
+            Assert.AreEqual(splitted[splitted.Length - 2], trace02.TimeStamp.ToString() + ",selected,zone,ObjectID3,success,false,completion,true,response,AnotherResponse,score,123.456,extension1,value1,extension2,value2,extension3,3,extension4,4.56");
         }
 
         /// <summary>
@@ -390,7 +390,7 @@
             string csv = storage.Load(settings.LogFile);
             string[] splitted = csv.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
-            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",selected,path,AlternativeID,SelectedOption"));
+            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",selected,path,AlternativeID,response,SelectedOption"));
         }
 
         /// <summary>
@@ -408,7 +408,7 @@
             string csv = storage.Load(settings.LogFile);
             string[] splitted = csv.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
-            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",unlocked,question,AlternativeID2,Answer number 3,SubCompletableScore,0.8"));
+            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",unlocked,question,AlternativeID2,response,Answer number 3,SubCompletableScore,0.8"));
         }
 
         /// <summary>
@@ -503,7 +503,7 @@
             string csv = storage.Load(settings.LogFile);
             string[] splitted = csv.Split(new string[] { "\r\n" }, StringSplitOptions.None);
 
-            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",completed,race,CompletableID3,true,0.54"));
+            Assert.IsTrue(splitted[splitted.Length - 2].Contains(",completed,race,CompletableID3,success,true,score,0.54"));
         }
 
         /// <summary>

@@ -1321,7 +1321,7 @@ namespace AssetPackage
                     + "," + Target.ToCsv() 
                     + (this.Result == null || String.IsNullOrEmpty(this.Result.ToCsv()) ?
                        String.Empty :
-                       "," + this.Result.ToCsv());
+                        this.Result.ToCsv());
             }
 
             /// <summary>
@@ -1378,12 +1378,12 @@ namespace AssetPackage
                 JSONClass json = new JSONClass();
 
                 json.Add("actor", (ActorObject == null) ? JSONNode.Parse("{}") : ActorObject);
-                json.Add("verb", Event.ToJson());
-                json.Add("object", Target.ToJson());
+                json.Add("verb", Event.ToXapi());
+                json.Add("object", Target.ToXapi());
 
                 if (Result != null)
                 {
-                    JSONClass result = Result.ToJson();
+                    JSONClass result = Result.ToXapi();
                     if (result.Count > 0)
                         json.Add("result", result);
                 }
@@ -1595,17 +1595,17 @@ namespace AssetPackage
                 public string ToCsv()
                 {
                     string result =
-                        intToBoolString(success)
-                        + intToBoolString(completion)
-                        + ((!string.IsNullOrEmpty(Response)) ? "," + Response : "")
-                        + ((!float.IsNaN(score))? "," + score.ToString().Replace(",",".") : "");
+                        ((success>-1) ? ",success" + intToBoolString(success) : "")
+                        + ((completion > -1) ? ",completion" + intToBoolString(completion) : "")
+                        + ((!string.IsNullOrEmpty(Response)) ? ",response," + Response : "")
+                        + ((!float.IsNaN(score)) ? ",score," + score.ToString().Replace(",",".") : "");
 
                     if (Extensions != null)
                         foreach (KeyValuePair<string, System.Object> extension in Extensions)
                             result += "," + extension.Key + "," + ((extension.Value != null) ? extension.Value.ToString().Replace(",",".") : "");
 
 
-                    return result.Length > 0 ? result.Substring(1) : result;
+                    return result;
                 }
 
                 public JSONClass ToJson()
