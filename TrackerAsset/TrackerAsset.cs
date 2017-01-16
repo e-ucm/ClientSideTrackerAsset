@@ -1390,7 +1390,7 @@ namespace AssetPackage
 
                 json.Add("timestamp", new JSONData(new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc).AddMilliseconds(TimeStamp).ToString("yyyy-MM-ddTHH:mm:ss.fffZ")));
 
-                return json.ToString();
+                return json.ToJSON(1);
             }
 
             /// <summary>
