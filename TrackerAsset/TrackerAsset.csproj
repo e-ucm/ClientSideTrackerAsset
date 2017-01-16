@@ -56,7 +56,6 @@
   <ItemGroup>
     <Compile Include="AccessibleTracker.cs" />
     <Compile Include="AlternativeTracker.cs" />
-    <Compile Include="Bridge.cs" />
     <Compile Include="CompletableTracker.cs" />
     <Compile Include="GameObjectTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
