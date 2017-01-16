@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-//#define ASYNC_INTERFACE
-
 namespace AssetPackage
 {
     using AssetPackage;
@@ -41,9 +39,6 @@ namespace AssetPackage
     /// </list>
     /// </summary>
     public class TrackerAsset : BaseAsset
-#if ASYNC_INTERFACE
-        , IWebServiceResponseAsync
-#endif
     {
         #region Fields
 
@@ -517,21 +512,6 @@ namespace AssetPackage
             return response.ResultAllowed;
         }
 
-#if ASYNC_INTERFACE
-        /// <summary>
-        /// Errors.
-        /// </summary>
-        ///
-        /// <param name="url"> URL of the document. </param>
-        /// <param name="msg"> The error message. </param>
-        public void Error(string url, string msg)
-        {
-            //Log(Severity.Error, "{0} - [{1}]", msg, url);
-
-            //Connected = false;
-        }
-#endif
-
         /// <summary>
         /// Flushes the queue.
         /// </summary>
@@ -708,116 +688,6 @@ namespace AssetPackage
             }
         }
 
-#if ASYNC_INTERFACE
-        /// <summary>
-        /// Success.
-        /// </summary>
-        ///
-        /// <remarks>
-        /// This method also extracts information from the returned body (token,
-        /// authToken, objectId and actor).
-        /// </remarks>
-        ///
-        /// <param name="url">     URL of the document. </param>
-        /// <param name="code">    The code. </param>
-        /// <param name="headers"> The headers. </param>
-        /// <param name="body">    The body. </param>
-        public void Success(string url, int code, Dictionary<string, string> headers, string body)
-        {
-            //Log(Severity.Verbose, "Success: {0} - [{1}]", code, url);
-
-            //foreach (KeyValuePair<string, string> kvp in headers)
-            //{
-            //    Log(Severity.Verbose, "{0}: {1}", kvp.Key, kvp.Value);
-            //}
-            //Log(Severity.Verbose, body);
-            //Log(Severity.Verbose, "");
-
-            //#warning the following code should be improved (is partially caused by the use of JSON instead of XML).
-
-            // Flow:
-            // 1a) If we use a: as Authorization value on the /start/ call (and do not login),
-            // 1b) We have to take the 'authToken' value from the /start/ request for subsequent calls.
-            // 2a) If we login with username/password, we get a temporary Authorization value from the 'token' value.
-            // 2b) This Authorization value we use for /start/ and replace it inside success() with the 'authToken' value for subsequent calls.
-            // 3a) The 'token' value from 2a) can also be used directly for a start() call.
-
-            ////! /HEALTH/
-            ////
-            //if (url.EndsWith("/health"))
-            //{
-            //    Log(Severity.Information, "Health= {0}", body);
-            //}
-
-            //! /LOGIN/
-            //
-            //if (url.EndsWith("/login") && jsonToken.IsMatch(body))
-            //{
-            //    settings.UserToken = jsonToken.Match(body).Groups[1].Value;
-            //    if (settings.UserToken.StartsWith("Bearer "))
-            //    {
-            //        settings.UserToken.Remove(0, "Bearer ".Length);
-            //    }
-            //    Log(Severity.Information, "Token= {0}", settings.UserToken);
-
-            //    Connected = true;
-            //}
-
-            //! /START/
-            //
-            //if (url.EndsWith(String.Format("/start/{0}", (Settings as TrackerAssetSettings).TrackingCode)))
-            //{
-            //    Log(Severity.Information, "");
-
-            //    // Extract AuthToken.
-            //    //
-            //    if (jsonAuthToken.IsMatch(body))
-            //    {
-            //        settings.UserToken = jsonAuthToken.Match(body).Groups[1].Value;
-            //        if (settings.UserToken.StartsWith("Bearer "))
-            //        {
-            //            settings.UserToken = settings.UserToken = settings.UserToken.Remove(0, "Bearer ".Length);
-            //        }
-            //        Log(Severity.Information, "AuthToken= {0}", settings.UserToken);
-
-            //        Connected = true;
-            //    }
-
-            //    // Extract AuthToken.
-            //    //
-            //    if (jsonObjectId.IsMatch(body))
-            //    {
-            //        ObjectId = jsonObjectId.Match(body).Groups[1].Value;
-
-            //        if (!ObjectId.EndsWith("/"))
-            //        {
-            //            ObjectId += "/";
-            //        }
-
-            //        Log(Severity.Information, "ObjectId= {0}", ObjectId);
-            //    }
-
-            //    // Extract Actor Json Object.
-            //    //
-            //    if (jsonActor.IsMatch(body))
-            //    {
-            //        ActorObject = jsonActor.Match(body).Groups[1].Value;
-
-            //        Log(Severity.Information, "Actor= {0}", ActorObject);
-
-            //        Active = true;
-            //    }
-            //}
-
-            if (url.EndsWith("/track"))
-            {
-                Log(Severity.Information, "Track= {0}", body);
-            }
-
-            Active = !(String.IsNullOrEmpty(ActorObject) || String.IsNullOrEmpty(ObjectId));
-        }
-#endif
-
         /// <summary>
         /// Adds the given value to the Queue.
         /// </summary>
@@ -831,91 +701,6 @@ namespace AssetPackage
                 extensions.Clear();
             }
             queue.Enqueue(trace);
-        }
-
-        /// <summary>
-        /// Issue a HTTP Webrequest.
-        /// </summary>
-        ///
-        /// <param name="path">   Full pathname of the file. </param>
-        /// <param name="method"> The method. </param>
-        ///
-        /// <returns>
-        /// true if it succeeds, false if it fails.
-        /// </returns>
-        private bool IssueRequestAsync(string path, string method)
-        {
-            return IssueRequestAsync(path, method, new Dictionary<string, string>(), String.Empty);
-        }
-
-        /// <summary>
-        /// Issue a HTTP Webrequest.
-        /// </summary>
-        ///
-        /// <param name="path">    Full pathname of the file. </param>
-        /// <param name="method">  The method. </param>
-        /// <param name="headers"> The headers. </param>
-        /// <param name="body">    The body. </param>
-        ///
-        /// <returns>
-        /// true if it succeeds, false if it fails.
-        /// </returns>
-        private bool IssueRequestAsync(string path, string method, Dictionary<string, string> headers, string body)
-        {
-            return IssueRequestAsync(path, method, headers, body, settings.Port);
-        }
-
-        /// <summary>
-        /// Issue a HTTP Webrequest.
-        /// </summary>
-        ///
-        /// <param name="path">    Full pathname of the file. </param>
-        /// <param name="method">  The method. </param>
-        /// <param name="headers"> The headers. </param>
-        /// <param name="body">    The body. </param>
-        /// <param name="port">    The port. </param>
-        ///
-        /// <returns>
-        /// true if it succeeds, false if it fails.
-        /// </returns>
-        private bool IssueRequestAsync(string path, string method, Dictionary<string, string> headers, string body, Int32 port)
-        {
-            IWebServiceRequestAsync ds = getInterface<IWebServiceRequestAsync>();
-
-            if (ds != null)
-            {
-                //Log(LogLevel.Verbose, "****");
-
-                Uri uri = new Uri(string.Format("http{0}://{1}{2}{3}/{4}",
-                    settings.Secure ? "s" : String.Empty,
-                    settings.Host,
-                    port == 80 ? String.Empty : String.Format(":{0}", port),
-                    String.IsNullOrEmpty(settings.BasePath.TrimEnd('/')) ? "" : settings.BasePath.TrimEnd('/'),
-                    path.TrimStart('/')));
-
-                Log(Severity.Verbose, "{0} [{1}]", method, uri.ToString());
-
-                foreach (KeyValuePair<string, string> kvp in headers)
-                {
-                    Log(Severity.Verbose, "{0}: {1}", kvp.Key, kvp.Value);
-                }
-
-                if (!string.IsNullOrEmpty(body))
-                {
-                    Log(Severity.Verbose, body);
-                }
-
-                /*ds.WebServiceRequestAsync(
-                    method,
-                    uri,
-                    headers,
-                    body,
-                    this);*/
-
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
