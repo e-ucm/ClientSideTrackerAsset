@@ -36,6 +36,39 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+  	<Compile Include="..\TrackerAsset\Exception\ExtensionException.cs">
+      <Link>ExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\TraceException.cs">
+      <Link>TraceException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\TrackerException.cs">
+      <Link>TrackerException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\XApiException.cs">
+      <Link>XApiException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\ExtensionException\KeyExtensionException.cs">
+      <Link>KeyExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\ExtensionException\ValueExtensionException.cs">
+      <Link>ValueExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\XApiException\ActorXApiException.cs">
+      <Link>ValueExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\XApiException\ExtensionXApiException.cs">
+      <Link>ValueExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\XApiException\TargetXApiException.cs">
+      <Link>ValueExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Exception\XApiException\VerbXApiException.cs">
+      <Link>ValueExtensionException.cs</Link>
+    </Compile>
+    <Compile Include="..\TrackerAsset\Utils\TrackerAssetUtils.cs">
+      <Link>TrackerAssetUtils.cs</Link>
+    </Compile>
     <Compile Include="..\TrackerAsset\AccessibleTracker.cs">
       <Link>AccessibleTracker.cs</Link>
     </Compile>

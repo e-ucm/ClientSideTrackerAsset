@@ -110,6 +110,19 @@ namespace AssetPackage
         }
 
         /// <summary>
+        /// Gets or sets the user PlayerId (Anonymous or Identified)
+        /// </summary>
+        ///
+        /// <value>
+        /// The user token.
+        /// </value>
+        public String PlayerId
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the game tracking code.
         /// </summary>
         ///

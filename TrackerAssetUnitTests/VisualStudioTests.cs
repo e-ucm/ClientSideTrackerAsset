@@ -29,9 +29,11 @@ namespace TrackerTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using AssetPackage;
+    using AssetPackage.Utils;
+    using AssetPackage.Exceptions;
 
     [TestClass]
-    public class UnitTest1
+    public class VisualStudioTests
     {
         #region Constants
 
@@ -222,7 +224,7 @@ namespace TrackerTests
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
             Assert.AreEqual(tracejson["result"].Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
-            Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 0.123f);
+            Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 0.123f);
         }
 
         /// <summary>
@@ -246,15 +248,15 @@ namespace TrackerTests
 
             Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 5);
             Assert.AreEqual(tracejson["result"]["response"].Value, "AnotherResponse");
-            Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 123.456f);
-            Assert.AreEqual(bool.Parse(tracejson["result"]["completion"].Value), true);
-            Assert.AreEqual(bool.Parse(tracejson["result"]["success"].Value), false);
+            Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 123.456f);
+            Assert.AreEqual(tracejson["result"]["completion"].AsBool, true);
+            Assert.AreEqual(tracejson["result"]["success"].AsBool, false);
 
             Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Children).Count, 4);
             Assert.AreEqual(tracejson["result"]["extensions"]["extension1"].Value, "value1");
             Assert.AreEqual(tracejson["result"]["extensions"]["extension2"].Value, "value2");
-            Assert.AreEqual(int.Parse(tracejson["result"]["extensions"]["extension3"].Value), 3);
-            Assert.AreEqual(float.Parse(tracejson["result"]["extensions"]["extension4"].Value), 4.56f);
+            Assert.AreEqual(tracejson["result"]["extensions"]["extension3"].AsInt, 3);
+            Assert.AreEqual(tracejson["result"]["extensions"]["extension4"].AsFloat, 4.56f);
         }
 
         /// <summary>
@@ -293,7 +295,7 @@ namespace TrackerTests
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
             Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
-            Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 0.123f);
+            Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 0.123f);
 
             //CHECK THE 3RD TRACE
             tracejson = file[2];
@@ -305,15 +307,15 @@ namespace TrackerTests
 
             Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 5);
             Assert.AreEqual(tracejson["result"]["response"].Value, "AnotherResponse");
-            Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 123.456f);
-            Assert.AreEqual(bool.Parse(tracejson["result"]["completion"].Value), true);
-            Assert.AreEqual(bool.Parse(tracejson["result"]["success"].Value), false);
+            Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 123.456f);
+            Assert.AreEqual(tracejson["result"]["completion"].AsBool, true);
+            Assert.AreEqual(tracejson["result"]["success"].AsBool, false);
 
             Assert.AreEqual(new List<JSONNode>(tracejson["result"]["extensions"].Children).Count, 4);
             Assert.AreEqual(tracejson["result"]["extensions"]["extension1"].Value, "value1");
             Assert.AreEqual(tracejson["result"]["extensions"]["extension2"].Value, "value2");
-            Assert.AreEqual(int.Parse(tracejson["result"]["extensions"]["extension3"].Value), 3);
-            Assert.AreEqual(float.Parse(tracejson["result"]["extensions"]["extension4"].Value), 4.56f);
+            Assert.AreEqual(tracejson["result"]["extensions"]["extension3"].AsInt, 3);
+            Assert.AreEqual(tracejson["result"]["extensions"]["extension4"].AsFloat, 4.56f);
         }
 
         /// <summary>
@@ -324,7 +326,7 @@ namespace TrackerTests
         {
             ChangeFormat(TrackerAsset.TraceFormats.csv);
 
-            asset.Accesible.Accessed("AccesibleID", AccessibleTracker.Accessible.Cutscene);
+            asset.Accessible.Accessed("AccesibleID", AccessibleTracker.Accessible.Cutscene);
             asset.Flush();
 
             string csv = storage.Load(settings.LogFile);
@@ -342,7 +344,7 @@ namespace TrackerTests
             ChangeFormat(TrackerAsset.TraceFormats.csv);
 
             asset.setExtension("extension1", "value1");
-            asset.Accesible.Skipped("AccesibleID2", AccessibleTracker.Accessible.Screen);
+            asset.Accessible.Skipped("AccesibleID2", AccessibleTracker.Accessible.Screen);
             asset.Flush();
 
             string csv = storage.Load(settings.LogFile);
@@ -359,7 +361,7 @@ namespace TrackerTests
         {
             ChangeFormat(TrackerAsset.TraceFormats.xapi);
 
-            asset.Accesible.Accessed("AccesibleID", AccessibleTracker.Accessible.Cutscene);
+            asset.Accessible.Accessed("AccesibleID", AccessibleTracker.Accessible.Cutscene);
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
@@ -380,7 +382,7 @@ namespace TrackerTests
             ChangeFormat(TrackerAsset.TraceFormats.xapi);
 
             asset.setExtension("extension1", "value1");
-            asset.Accesible.Skipped("AccesibleID2", AccessibleTracker.Accessible.Screen);
+            asset.Accessible.Skipped("AccesibleID2", AccessibleTracker.Accessible.Screen);
             asset.Flush();
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
@@ -418,7 +420,7 @@ namespace TrackerTests
         {
             ChangeFormat(TrackerAsset.TraceFormats.csv);
 
-            asset.setExtension("SubCompletableScore", 0.8);
+            asset.setVar("SubCompletableScore", 0.8);
             asset.Alternative.Unlocked("AlternativeID2", "Answer number 3", AlternativeTracker.Alternative.Question);
             asset.Flush();
 
@@ -457,7 +459,7 @@ namespace TrackerTests
         {
             ChangeFormat(TrackerAsset.TraceFormats.xapi);
 
-            asset.setExtension("SubCompletableScore", 0.8);
+            asset.setVar("SubCompletableScore", 0.8f);
             asset.Alternative.Unlocked("AlternativeID2", "Answer number 3", AlternativeTracker.Alternative.Question);
             asset.Flush();
 
@@ -469,7 +471,7 @@ namespace TrackerTests
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "http://adlnet.gov/expapi/activities/question");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/seriousgames/verbs/unlocked");
             Assert.AreEqual(tracejson["result"]["response"].Value, "Answer number 3");
-            Assert.AreEqual(float.Parse(tracejson["result"]["extensions"]["SubCompletableScore"].Value), 0.8f);
+            Assert.AreEqual(tracejson["result"]["extensions"]["SubCompletableScore"].AsFloat, 0.8f);
         }
 
         /// <summary>
@@ -561,7 +563,7 @@ namespace TrackerTests
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/stage");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/progressed");
-            Assert.AreEqual(float.Parse(tracejson["result"]["extensions"]["progress"].Value), 0.34f);
+            Assert.AreEqual(tracejson["result"]["extensions"]["https://w3id.org/xapi/seriousgames/extensions/progress"].AsFloat, 0.34f);
         }
 
         /// <summary>
@@ -577,14 +579,13 @@ namespace TrackerTests
 
             JSONNode file = JSON.Parse(storage.Load(settings.LogFile));
             JSONNode tracejson = file[new List<JSONNode>(file.Children).Count - 1];
-            Console.WriteLine("teadadas");
 
             Assert.AreEqual(tracejson.Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID3");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/race");
             Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/completed");
-            Assert.AreEqual(bool.Parse(tracejson["result"]["success"].Value), true);
-            Assert.AreEqual(float.Parse(tracejson["result"]["score"].Value), 0.54f);
+            Assert.AreEqual(tracejson["result"]["success"].AsBool, true);
+            Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 0.54f);
         }
 
         /// <summary>
@@ -674,6 +675,54 @@ namespace TrackerTests
 
                 if (storage.Exists(settings.LogFile))
                     storage.Delete(settings.LogFile);
+            }
+        }
+
+        private string removeTimestamp(string trace)
+        {
+            return trace.Substring(trace.IndexOf(',') + 1);
+        }
+
+        private void CheckCSVTrace(string trace)
+        {
+            //TODO: this method should access the queue directly.
+
+            CheckCSVStoredTrace(trace);
+        }
+
+        private void CheckCSVStoredTrace(string trace)
+        {
+            string[] lines = System.IO.File.ReadAllLines(settings.LogFile);
+
+            string traceWithoutTimestamp = removeTimestamp(lines[lines.Length - 1]);
+
+            CompareCSV(traceWithoutTimestamp, trace);
+        }
+
+        private void CompareCSV(string t1, string t2)
+        {
+            string[] sp1 = TrackerAssetUtils.parseCSV(t1);
+            string[] sp2 = TrackerAssetUtils.parseCSV(t2);
+
+            Assert.AreEqual(sp1.Length, sp2.Length);
+
+            for (int i = 0; i < 3; i++)
+                Assert.AreEqual(sp1[i], sp2[i]);
+
+            Dictionary<string, string> d1 = new Dictionary<string, string>();
+
+            if (sp1.Length > 3)
+            {
+                for (int i = 3; i < sp1.Length; i += 2)
+                {
+                    d1.Add(sp1[i], sp1[i + 1]);
+                }
+
+                for (int i = 3; i < sp2.Length; i += 2)
+                {
+                    CollectionAssert.Contains(d1.Keys, sp2[i]);
+                    Assert.AreEqual(d1[sp2[i]], sp2[i + 1]);
+                }
             }
         }
 

@@ -17,6 +17,8 @@
  */
 using System.Collections;
 using AssetPackage;
+using AssetPackage.Utils;
+using AssetPackage.Exceptions;
 
 public class AlternativeTracker : TrackerAsset.IGameObjectTracker
 {
@@ -48,15 +50,18 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
     /// <param name="optionId">Option identifier.</param>
     public void Selected(string alternativeId, string optionId)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(alternativeId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), alternativeId),
-            Result = new TrackerAsset.TrackerEvent.TraceResult()
+            tracker.Trace(new TrackerAsset.TrackerEvent()
             {
-                Response = optionId
-            }
-        });
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(Alternative.Alternative.ToString().ToLower(), alternativeId),
+                Result = new TrackerAsset.TrackerEvent.TraceResult()
+                {
+                    Response = optionId
+                }
+            });
+        }
     }
 
     /// <summary>
@@ -67,15 +72,18 @@ public class AlternativeTracker : TrackerAsset.IGameObjectTracker
     /// <param name="type">Alternative type.</param>
     public void Selected(string alternativeId, string optionId, Alternative type)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(alternativeId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), alternativeId),
-            Result = new TrackerAsset.TrackerEvent.TraceResult()
+            tracker.Trace(new TrackerAsset.TrackerEvent()
             {
-                Response = optionId
-            }
-        });
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Selected),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), alternativeId),
+                Result = new TrackerAsset.TrackerEvent.TraceResult()
+                {
+                    Response = optionId
+                }
+            });
+        }
     }
 
     /// <summary>

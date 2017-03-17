@@ -19,11 +19,21 @@
 namespace AssetPackage
 {
     using AssetPackage;
+    using AssetPackage.Exceptions;
+    using AssetPackage.Utils;
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Text.RegularExpressions;
     using SimpleJSON;
+
+    [Obsolete("Use TrackerAsset instead")]
+    public class Tracker
+    {
+        public static TrackerAsset Instance {
+            get { return TrackerAsset.Instance; }
+        }
+    }
 
     /// <summary>
     /// A tracker asset.
@@ -93,6 +103,19 @@ namespace AssetPackage
         private static String ObjectId = String.Empty;
 
         /// <summary>
+        /// Tracker StrictMode
+        /// </summary>
+        private bool strictMode = true;
+
+        /// <summary>
+        /// Tracker StrictMode
+        /// </summary>
+        public bool StrictMode {
+            get { return strictMode; }
+            set { strictMode = value; }
+        }
+
+        /// <summary>
         /// A Regex to extact the actor object from JSON.
         /// </summary>
         private Regex jsonActor = new Regex(String.Format(ObjectRegEx, "actor"), RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
@@ -101,6 +124,16 @@ namespace AssetPackage
         /// A Regex to extact the authentication token value from JSON.
         /// </summary>
         private Regex jsonAuthToken = new Regex(String.Format(TokenRegEx, "authToken"), RegexOptions.Singleline);
+
+        /// <summary>
+        /// A Regex to extact the playerid token value from JSON.
+        /// </summary>
+        private Regex jsonPlayerId = new Regex(String.Format(TokenRegEx, "playerId"), RegexOptions.Singleline);
+
+        /// <summary>
+        /// A Regex to extact the session token value from JSON.
+        /// </summary>
+        private Regex jsonSession = new Regex(String.Format(TokenRegEx, "session"), RegexOptions.Singleline);
 
         /// <summary>
         /// A Regex to extact the objectId value from JSON.
@@ -135,7 +168,7 @@ namespace AssetPackage
         #region SubTracker Fields
 
         /// <summary>
-        /// Instance of AccesibleTracker
+        /// Instance of AccessibleTracker
         /// </summary>
         private AccessibleTracker accessibletracker;
 
@@ -411,9 +444,9 @@ namespace AssetPackage
         #region SubTracker Properties
 
         /// <summary>
-        /// Access point for Accesible Traces generation
+        /// Access point for Accessible Traces generation
         /// </summary>
-        public AccessibleTracker Accesible
+        public AccessibleTracker Accessible
         {
             get
             {
@@ -478,6 +511,42 @@ namespace AssetPackage
             }
         }
 
+        /// <summary>
+        /// Access point for Accessible Traces generation
+        /// </summary>
+        [Obsolete("Use TrackerAsset.Accessible")]
+        public AccessibleTracker accessible
+        {
+            get { return Accessible; }
+        }
+
+        /// <summary>
+        /// Access point for Alternative Traces generation
+        /// </summary>
+        [Obsolete("Use TrackerAsset.Alternative")]
+        public AlternativeTracker alternative
+        {
+            get { return Alternative; }
+        }
+
+        /// <summary>
+        /// Access point for Completable Traces generation
+        /// </summary>
+        [Obsolete("Use TrackerAsset.Completable")]
+        public CompletableTracker completable
+        {
+            get { return Completable; }
+        }
+
+        /// <summary>
+        /// Access point for Completable Traces generation
+        /// </summary>
+        [Obsolete("Use TrackerAsset.GameObject")]
+        public GameObjectTracker trackedGameObject
+        {
+            get { return GameObject; }
+        }
+
         #endregion SubTracker Properties
 
         #endregion Properties
@@ -528,6 +597,16 @@ namespace AssetPackage
                 ProcessQueue();
             }
         }
+
+        /// <summary>
+        /// Flushes the queue.
+        /// </summary>
+        [Obsolete("Use Flush instead.")]
+        public void RequestFlush()
+        {
+            Flush();
+        }
+        
 
         /// <summary>
         /// Login with a Username and Password.
@@ -615,7 +694,12 @@ namespace AssetPackage
 
                     //! The UserToken might get swapped for a better one during response
                     //! processing. 
-                    headers["Authorization"] = String.Format("Bearer {0}", settings.UserToken);
+                    if (!String.IsNullOrEmpty(settings.UserToken))
+                        headers["Authorization"] = String.Format("Bearer {0}", settings.UserToken);
+                    else if (!String.IsNullOrEmpty(settings.PlayerId))
+                        headers["Authorization"] = String.Format("a:{0}", settings.PlayerId);
+                    else
+                        headers["Authorization"] = String.Format("a:");
 
                     RequestResponse response = IssueRequest(String.Format("proxy/gleaner/collector/start/{0}", settings.TrackingCode), "POST", headers, String.Empty);
 
@@ -628,19 +712,27 @@ namespace AssetPackage
                         if (jsonAuthToken.IsMatch(response.body))
                         {
                             settings.UserToken = jsonAuthToken.Match(response.body).Groups[1].Value;
-                            /*
-                            if (settings.UserToken.StartsWith("Bearer "))
-                            {
-                                //! Update UserToken.
-                                settings.UserToken = settings.UserToken = settings.UserToken.Remove(0, "Bearer ".Length);
-                            }
-                            */
                             Log(Severity.Information, "AuthToken= {0}", settings.UserToken);
 
                             Connected = true;
                         }
 
-                        // Extract AuthToken.
+                        // Extract PlayerId.
+                        //
+                        if (jsonPlayerId.IsMatch(response.body))
+                        {
+                            settings.PlayerId = jsonPlayerId.Match(response.body).Groups[1].Value;
+                            Log(Severity.Information, "PlayerId= {0}", settings.PlayerId);
+                        }
+
+                        // Extract PlayerId.
+                        //
+                        if (jsonSession.IsMatch(response.body))
+                        {
+                            Log(Severity.Information, "Session= {0}", jsonSession.Match(response.body).Groups[1].Value);
+                        }
+
+                        // Extract ObjectID.
                         //
                         if (jsonObjectId.IsMatch(response.body))
                         {
@@ -689,6 +781,57 @@ namespace AssetPackage
         }
 
         /// <summary>
+		/// Clears the unflushed Trace queue and the unappended extensions queue
+		/// </summary>
+        public void Clear()
+        {
+            queue.Clear();
+            extensions.Clear();
+        }
+
+        /// <summary>
+		/// Adds a full trace to the queue, ignoring current extensions.
+		/// </summary>
+		/// <param name="trace">A comma separated string with the values of the trace</param>
+		[Obsolete("Use ActionTrace instead. Never intended to be public. Has to receive a csv with specific format.")]
+        public void Trace(string trace)
+        {
+            if (trace == null || trace == "")
+                throw new TraceException("Trace is be empty or null");
+
+            string[] parts = TrackerAssetUtils.parseCSV(trace);
+
+            if (parts.Length != 3)
+                throw new TraceException("Trace length must be 3 (verb,target_type,target_id)");
+
+            ActionTrace(parts[0], parts[1], parts[2]);
+        }
+
+        /// <summary>
+		/// Adds a trace with the specified values
+		/// </summary>
+		/// <param name="values">Values of the trace.</param>
+		[Obsolete("Use ActionTrace instead. Never intended to be public. Has to receive values in specific order.")]
+        public void Trace(params string[] values)
+        {
+            /*if (strictMode) {
+				Debug.LogWarning ("Tracker: Trace() method is Obsolete. Ignoring");
+				return;
+			} else {*/
+            if (values.Length != 3)
+                throw new TraceException("Tracker: Trace must have at least 3 arguments: a verb, a target type and a target ID");
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (!TrackerAssetUtils.check<TraceException>(values[i], "Tracker: Trace param " + i + " is null or empty, ignoring trace.", "Tracker: Trace param " + i + " is null or empty"))
+                    return;
+            }
+            //}
+
+            ActionTrace(values[0],values[1],values[2]);
+        }
+
+        /// <summary>
         /// Adds the given value to the Queue.
         /// </summary>
         ///
@@ -701,6 +844,27 @@ namespace AssetPackage
                 extensions.Clear();
             }
             queue.Enqueue(trace);
+        }
+
+        /// <summary>
+		/// Adds a trace with verb, target and targeit
+		/// </summary>
+		/// <param name="values">Values of the trace.</param>
+		public void ActionTrace(string verb, string target_type, string target_id)
+        {
+            bool trace = true;
+
+            trace &= TrackerAssetUtils.check<TraceException>(verb, "Tracker: Trace verb can't be null, ignoring. ", "Tracker: Trace verb can't be null.");
+            trace &= TrackerAssetUtils.check<TraceException>(target_type, "Tracker: Trace Target type can't be null, ignoring. ", "Tracker: Trace Target type can't be null.");
+            trace &= TrackerAssetUtils.check<TraceException>(target_id, "Tracker: Trace Target ID can't be null, ignoring. ", "Tracker: Trace Target ID can't be null.");
+
+            if (trace)
+            {
+                Trace(new TrackerEvent(){
+                    Event = new TrackerEvent.TraceVerb(verb),
+                    Target = new TrackerEvent.TraceObject(target_type, target_id)
+                });
+            }
         }
 
         /// <summary>
@@ -889,30 +1053,182 @@ namespace AssetPackage
 
         #region Extension Methods
 
+        /// <summary>
+		/// Sets if the following trace has been a success, including this value to the extensions.
+		/// </summary>
+		/// <param name="success">If set to <c>true</c> means it has been a success.</param>
+		public void setSuccess(bool success)
+        {
+            setVar(Extension.Success.ToString().ToLower(), success);
+        }
+
+        /// <summary>
+        /// Sets the score of the following trace, including it to the extensions.
+        /// </summary>
+        /// <param name="score">Score, (Recomended between 0 and 1)</param>
+        public void setScore(float score)
+        {
+            if (score < 0 || score > 1)
+                Log(Severity.Warning, "Tracker: Score recommended between 0 and 1 (Current: " + score + ")");
+
+            setVar(Extension.Score.ToString().ToLower(), score);
+        }
+
+        /// <summary>
+        /// Sets the response. If the player chooses between alternatives, the response should be the selected alternative.
+        /// </summary>
+        /// <param name="response">Response.</param>
+        public void setResponse(string response)
+        {
+            addExtension(Extension.Response.ToString().ToLower(), response);
+        }
+
+        /// <summary>
+        /// Sets the completion of the following trace extensions. Completion specifies if something has been completed.
+        /// </summary>
+        /// <param name="completion">If set to <c>true</c> the trace action has been completed.</param>
+        public void setCompletion(bool completion)
+        {
+            setVar(Extension.Completion.ToString().ToLower(), completion);
+        }
+
+        /// <summary>
+        /// Sets the progress of the action. 
+        /// </summary>
+        /// <param name="progress">Progress. (Recomended between 0 and 1)</param>
         public void setProgress(float progress)
         {
-            setExtension(Extension.Progress.ToString().ToLower(), progress);
+            if (progress < 0 || progress > 1)
+                Log(Severity.Warning, "Tracker: Progress recommended between 0 and 1 (Current: " + progress + ")");
+
+            setVar(Extension.Progress.ToString().ToLower(), progress);
         }
 
+        /// <summary>
+        /// Sets the coords where the trace takes place.
+        /// </summary>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <param name="z">The z coordinate.</param>
         public void setPosition(float x, float y, float z)
         {
-            setExtension(Extension.Position.ToString().ToLower(), "{\"x\":" + x + ", \"y\": " + y
-                    + ", \"z\": " + z + "}");
+            if (float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z))
+            {
+                if (StrictMode)
+                    throw new ValueExtensionException("Tracker: x, y or z cant be null.");
+                else
+                {
+                    Log(Severity.Information, "Tracker: x, y or z cant be null, ignoring.");
+                    return;
+                }
+            }
+
+            addExtension(Extension.Position.ToString().ToLower(), "{\"x\":" + x + ", \"y\": " + y + ", \"z\": " + z + "}");
         }
 
+        /// <summary>
+        /// Sets the health of the player's character when the trace occurs. 
+        /// </summary>
+        /// <param name="health">Health.</param>
         public void setHealth(float health)
         {
-            setExtension(Extension.Health.ToString().ToLower(), health);
+            if (TrackerAssetUtils.check<ValueExtensionException>(health, "Tracker: Health cant be null, ignoring.", "Tracker: Health cant be null."))
+                addExtension(Extension.Health.ToString().ToLower(), health);
         }
 
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="id">Identifier.</param>
+        /// <param name="value">Value.</param>
         public void setVar(string id, string value)
         {
-            setExtension(id, value);
+            addExtension(id, value);
         }
 
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        public void setVar(string key, int value)
+        {
+            addExtension(key, value);
+        }
+
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        public void setVar(string key, float value)
+        {
+            addExtension(key, value);
+        }
+
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        public void setVar(string key, double value)
+        {
+            addExtension(key, value);
+        }
+
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        public void setVar(string key, bool value)
+        {
+            addExtension(key, value);
+        }
+
+
+        /// <summary>
+        /// Adds a extension to the extension list.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        [Obsolete("Use setVar instead. Never intended to be public.")]
+        public void setExtension(string key, float value)
+        {
+            addExtension(key, value);
+        }
+
+        /// <summary>
+        /// Adds a extension to the extension list.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        [Obsolete("Use setVar instead. Never intended to be public.")]
+        public void setExtension(string key, double value)
+        {
+            addExtension(key, value);
+        }
+
+        /// <summary>
+        /// Adds a extension to the extension list.
+        /// </summary>
+        /// <param name="key">Key.</param>
+        /// <param name="value">Value.</param>
+        [Obsolete("Use setVar instead. Never intended to be public.")]
         public void setExtension(string key, System.Object value)
         {
-            extensions.Add(key, value);
+            addExtension(key, value);
+        }
+
+        private void addExtension(string key, System.Object value)
+        {
+            if (TrackerAssetUtils.checkExtension(key, value))
+            {
+                if (extensions.ContainsKey(key))
+                    extensions[key] = value;
+                else
+                    extensions.Add(key, value);
+            }
         }
 
         #endregion Extension Methods
@@ -1207,6 +1523,17 @@ namespace AssetPackage
                 return value;
             }
 
+            private bool isValid()
+            {
+                bool check = true;
+                
+                check &= Event.isValid();
+                check &= Target.isValid();
+                check &= Result.isValid();
+
+                return true;
+            }
+
             #endregion Methods
 
             #region Nested Types
@@ -1236,19 +1563,35 @@ namespace AssetPackage
 
                 public TraceObject(string type, string id)
                 {
-                    this.Type = type;
-                    this.ID = id;
+                    bool check = true;
+
+                    check &= TrackerAssetUtils.check<TargetXApiException>(type, "xAPI Exception: Target Type is null or empty. Ignoring.", "xAPI Exception: Target Type can't be null or empty.");
+                    check &= TrackerAssetUtils.check<TargetXApiException>(id, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty.");
+
+                    if (check)
+                    {
+                        this.Type = type;
+                        this.ID = id;
+                    }
                 }
 
                 public string ToCsv()
                 {
-                    return Type + "," + ID;
+                    return Type.Replace(",","\\,") + "," + ID.Replace(",", "\\,");
                 }
 
                 public JSONClass ToJson()
                 {
                     string typeKey = Type;
-                    ObjectIDs.TryGetValue(Type, out typeKey);
+
+                    if(!ObjectIDs.TryGetValue(Type, out typeKey))
+                    {
+                        typeKey = Type;
+                        if (TrackerAsset.Instance.StrictMode)
+                            throw (new TargetXApiException("Tracker-xAPI: Unknown definition for target type: " + Type));
+                        else
+                            TrackerAsset.Instance.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for target type: " + Type);
+                    }
 
                     JSONClass obj = new JSONClass(), definition = new JSONClass();
 
@@ -1269,7 +1612,15 @@ namespace AssetPackage
                 public JSONClass ToXapi()
                 {
                     string typeKey = Type;
-                    ObjectIDs.TryGetValue(Type, out typeKey);
+
+                    if (!ObjectIDs.TryGetValue(Type, out typeKey))
+                    {
+                        typeKey = Type;
+                        if (TrackerAsset.Instance.StrictMode)
+                            throw (new TargetXApiException("Tracker-xAPI: Unknown definition for target type: " + Type));
+                        else
+                            TrackerAsset.Instance.Log(Severity.Warning, "Tracker-xAPI: Unknown definition for target type: " + Type);
+                    }
 
                     JSONClass obj = new JSONClass(), definition = new JSONClass();
 
@@ -1280,6 +1631,11 @@ namespace AssetPackage
 
                     return obj;
                 }
+
+                public bool isValid()
+                {
+                    return TrackerAssetUtils.quickCheck(Type) && TrackerAssetUtils.quickCheck(ID);
+                }
             }
 
             /// <summary>
@@ -1287,10 +1643,38 @@ namespace AssetPackage
             /// </summary>
             public class TraceVerb
             {
+                private string sverb = "";
+                private Verb vverb;
+
+                public string sVerb
+                {
+                    get { return sverb; }
+                    set
+                    {
+                        sverb = value;
+                        Verb v;
+                        if (TrackerAssetUtils.TryParseEnum<Verb>(value, out v))
+                        {
+                            sverb = value.ToLower();
+                            this.vverb = v;
+                        }
+                        else {
+                            if (TrackerAsset.Instance.StrictMode)
+                                throw (new VerbXApiException("Tracker-xAPI: Unknown definition for verb: " + value));
+                            else
+                                TrackerAsset.Instance.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for verb: " + value);
+                        }
+                    }
+                }
+
                 public Verb Verb
                 {
-                    get;
-                    set;
+                    get { return vverb;  }
+                    set
+                    {
+                        sverb = value.ToString().ToLower();
+                        vverb = value;
+                    }
                 }
 
                 public TraceVerb(Verb verb)
@@ -1298,19 +1682,29 @@ namespace AssetPackage
                     this.Verb = verb;
                 }
 
+                public TraceVerb(String verb)
+                {
+                    this.sVerb = verb;
+                }
+
                 public string ToCsv()
                 {
-                    return this.Verb.ToString().ToLower();
+                    return this.sVerb.Replace(",", "\\,");
                 }
 
                 public JSONClass ToJson()
                 {
-                    string id = this.Verb.ToString().ToLower();
-                    VerbIDs.TryGetValue(id, out id);
+                    string id = this.sVerb;
 
                     JSONClass verb = new JSONClass();
-                    verb["id"] = id;
-
+                    if (VerbIDs.TryGetValue(id, out id))
+                    {
+                        verb["id"] = id;
+                    }
+                    else
+                    {
+                        verb["id"] = sverb;
+                    }
                     return verb;
                 }
 
@@ -1322,13 +1716,24 @@ namespace AssetPackage
 
                 public JSONClass ToXapi()
                 {
-                    string id = this.Verb.ToString().ToLower();
-                    VerbIDs.TryGetValue(id, out id);
+                    string id = this.sVerb;
 
                     JSONClass verb = new JSONClass();
-                    verb["id"] = id;
+                    if (VerbIDs.TryGetValue(id, out id))
+                    {
+                        verb["id"] = id;
+                    }
+                    else
+                    {
+                        verb["id"] = sverb;
+                    }
 
                     return verb;
+                }
+
+                public bool isValid()
+                {
+                    return TrackerAssetUtils.quickCheck(sverb);
                 }
             }
 
@@ -1353,10 +1758,15 @@ namespace AssetPackage
                     set { completion = value ? 1 : 0; }
                 }
 
+                string res;
                 public string Response
                 {
-                    get;
-                    set;
+                    get { return res; }
+                    set
+                    {
+                        if (TrackerAssetUtils.check<ValueExtensionException>(value, "xAPI extension: response Empty or null. Ignoring", "xAPI extension: response can't be empty or null"))
+                            res = value;
+                    }
                 }
 
                 public float Score
@@ -1367,14 +1777,30 @@ namespace AssetPackage
                     } 
                     set
                     {
-                        score = value;
+                        if (TrackerAssetUtils.check<ValueExtensionException>(value, "xAPI extension: score null or NaN. Ignoring", "xAPI extension: score can't be null or NaN."))
+                            score = value;
                     }
                 }
 
+                Dictionary<string, System.Object> extdir;
                 public Dictionary<string,System.Object> Extensions
                 {
-                    get;
-                    set;
+                    get { return extdir; }
+                    set
+                    {
+                        extdir = new Dictionary<string, object>();
+                        foreach(KeyValuePair<string,object> extension in value)
+                        {
+                            switch (extension.Key.ToLower())
+                            {
+                                case "success": Success = (bool) extension.Value; break;
+                                case "completion": Completion = (bool) extension.Value; break;
+                                case "response": Response = (string) extension.Value; break;
+                                case "score": Score = (float) extension.Value; break;
+                                default: extdir.Add(extension.Key, extension.Value);  break;
+                            }
+                        }
+                    }
                 }
 
                 public string ToCsv()
@@ -1382,12 +1808,31 @@ namespace AssetPackage
                     string result =
                         ((success>-1) ? ",success" + intToBoolString(success) : "")
                         + ((completion > -1) ? ",completion" + intToBoolString(completion) : "")
-                        + ((!string.IsNullOrEmpty(Response)) ? ",response," + Response : "")
-                        + ((!float.IsNaN(score)) ? ",score," + score.ToString().Replace(",",".") : "");
+                        + ((!string.IsNullOrEmpty(Response)) ? ",response," + Response.Replace(",", "\\,") : "")
+                        + ((!float.IsNaN(score)) ? ",score," + score.ToString("G", System.Globalization.CultureInfo.InvariantCulture) : "");
 
-                    if (Extensions != null)
+                    if (Extensions != null && Extensions.Count > 0)
                         foreach (KeyValuePair<string, System.Object> extension in Extensions)
-                            result += "," + extension.Key + "," + ((extension.Value != null) ? extension.Value.ToString().Replace(",",".") : "");
+                        {
+                            result += "," + extension.Key.Replace(",", "\\,") + ",";
+                            if(extension.Value != null)
+                            {
+                                if (extension.Value.GetType() == typeof(string))
+                                    result += extension.Value.ToString().Replace(",", "\\,");
+                                else if(extension.Value.GetType() == typeof(float))
+                                {
+                                    result += ((float) extension.Value).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+                                }
+                                else if (extension.Value.GetType() == typeof(double))
+                                {
+                                    result += ((double)extension.Value).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+                                }
+                                else
+                                {
+                                    result += extension.Value.ToString();
+                                }
+                            }
+                        }
 
 
                     return result;
@@ -1407,14 +1852,32 @@ namespace AssetPackage
                         result.Add("response", new JSONData(Response));
 
                     if (!float.IsNaN(score))
-                        result.Add("score", new JSONData(score));
+                    {
+                        JSONClass s = new JSONClass();
+                        s.Add("raw", new JSONData(score));
+                        result.Add("score", s);
+                    }
 
-                    if (Extensions != null) {
+                    if (Extensions != null && Extensions.Count > 0) {
 
                         JSONClass extensions = new JSONClass();
                         foreach(KeyValuePair <string, System.Object > extension in Extensions)
                         {
-                            extensions.Add(extension.Key, new JSONData((extension.Value != null) ? extension.Value.ToString() : ""));
+                            if (extension.Value != null)
+                            {
+                                if (extension.Value.GetType() == typeof(float))
+                                {
+                                    extensions.Add(extension.Key, new JSONData((float) extension.Value));
+                                }
+                                else if (extension.Value.GetType() == typeof(double))
+                                {
+                                    extensions.Add(extension.Key, new JSONData((double) extension.Value));
+                                }
+                                else
+                                {
+                                    extensions.Add(extension.Key, new JSONData(extension.Value.ToString()));
+                                }
+                            }
                         }
 
                         result.Add("extensions", extensions);
@@ -1443,15 +1906,39 @@ namespace AssetPackage
                         result.Add("response", new JSONData(Response));
 
                     if (!float.IsNaN(score))
-                        result.Add("score", new JSONData(score));
+                    {
+                        JSONClass s = new JSONClass();
+                        s.Add("raw", new JSONData(score));
+                        result.Add("score", s);
+                    }
 
-                    if (Extensions != null)
+                    if (Extensions != null && Extensions.Count > 0)
                     {
 
                         JSONClass extensions = new JSONClass();
                         foreach (KeyValuePair<string, System.Object> extension in Extensions)
                         {
-                            extensions.Add(extension.Key, new JSONData((extension.Value != null) ? extension.Value.ToString() : ""));
+                            if (extension.Value != null)
+                            {
+                                string key = extension.Key;
+
+                                string tmpkey = "";
+                                if (ExtensionIDs.TryGetValue(key, out tmpkey))
+                                    key = tmpkey;
+
+                                if (extension.Value.GetType() == typeof(float))
+                                {
+                                    extensions.Add(key, new JSONData((float)extension.Value));
+                                }
+                                else if (extension.Value.GetType() == typeof(double))
+                                {
+                                    extensions.Add(key, new JSONData((double)extension.Value));
+                                }
+                                else
+                                {
+                                    extensions.Add(key, new JSONData(extension.Value.ToString()));
+                                }
+                            }
                         }
 
                         result.Add("extensions", extensions);
@@ -1472,6 +1959,37 @@ namespace AssetPackage
                         ret = ",false";
                     }
                     return ret;
+                }
+
+                public bool isValid()
+                {
+                    bool valid = true;
+
+                    JSONClass result = new JSONClass();
+
+                    if (success != -1)
+                        valid &= TrackerAssetUtils.quickCheck(success);
+
+                    if (completion != -1)
+                        valid &= TrackerAssetUtils.quickCheck(completion);
+
+                    if (!string.IsNullOrEmpty(Response))
+                        valid &= TrackerAssetUtils.quickCheck(Response);
+
+                    if (!float.IsNaN(score))
+                    {
+                        valid &= TrackerAssetUtils.quickCheck(score);
+                    }
+
+                    if (Extensions != null && Extensions.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, System.Object> extension in Extensions)
+                        {
+                            valid &= TrackerAssetUtils.quickCheckExtension(extension.Key, extension.Value);
+                        }
+                    }
+
+                    return valid;
                 }
             }
 
