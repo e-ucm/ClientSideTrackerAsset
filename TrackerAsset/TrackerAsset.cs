@@ -687,9 +687,6 @@ namespace AssetPackage
         /// </summary>
         public void Start()
         {
-            queue.Clear();
-            extensions.Clear();
-
             switch (settings.StorageType)
             {
                 case StorageTypes.net:
@@ -781,6 +778,15 @@ namespace AssetPackage
                     }
                     break;
             }
+        }
+
+        /// <summary>
+		/// Clears the unflushed Trace queue and the unappended extensions queue
+		/// </summary>
+        public void Clear()
+        {
+            queue.Clear();
+            extensions.Clear();
         }
 
         /// <summary>
