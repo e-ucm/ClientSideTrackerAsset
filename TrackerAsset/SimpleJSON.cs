@@ -172,13 +172,14 @@ namespace SimpleJSON
             get
             {
                 float v = 0.0f;
-                if (float.TryParse(Value, out v))
+
+				if (float.TryParse(Value,System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out v))
                     return v;
                 return 0.0f;
             }
             set
             {
-                Value = value.ToString();
+                Value = value.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
                 Tag = JSONBinaryTag.FloatValue;
             }
         }
@@ -188,13 +189,13 @@ namespace SimpleJSON
             get
             {
                 double v = 0.0;
-                if (double.TryParse(Value, out v))
+				if (double.TryParse(Value,System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out v))
                     return v;
                 return 0.0;
             }
             set
             {
-                Value = value.ToString();
+                Value = value.ToString("G", System.Globalization.CultureInfo.InvariantCulture);
                 Tag = JSONBinaryTag.DoubleValue;
 
             }
@@ -313,15 +314,20 @@ namespace SimpleJSON
             bool flag = false;
             int integer = 0;
             double real = 0;
+            float freal = 0f;
 
-            token = token.Replace(".", ",");
 
             if (int.TryParse(token, out integer))
             {
                 return new JSONData(integer);
             }
 
-            if (double.TryParse(token, out real))
+            if (float.TryParse(token, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out freal))
+            {
+                return new JSONData(freal);
+            }
+
+            if (double.TryParse(token, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out real))
             {
                 return new JSONData(real);
             }
@@ -422,8 +428,7 @@ namespace SimpleJSON
                         stack.Pop();
                         if (Token.Length > 0)
                         {
-                            string tmpName = TokenName.ToString().Trim();
-                            AddElement(ctx, Token.ToString(), TokenName.ToString(), TokenIsString);
+                            AddElement(ctx, Token.ToString(), TokenName.ToString().Trim(), TokenIsString);
                             TokenIsString = false;
                         }
                         TokenName.Length = 0;
@@ -525,7 +530,7 @@ namespace SimpleJSON
             }
             return ctx;
         }
-        
+
     }
     // End of JSONNode
 
@@ -849,7 +854,7 @@ namespace SimpleJSON
                 case JSONBinaryTag.FloatValue:
                 case JSONBinaryTag.IntValue:
                 case JSONBinaryTag.BoolValue:
-                    return m_Data.Replace(",",".");
+                    return m_Data.Replace(",", ".");
                 case JSONBinaryTag.Value:
                     return string.Format("\"{0}\"", Escape(m_Data));
                 default:
