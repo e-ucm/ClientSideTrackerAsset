@@ -42,6 +42,7 @@ public class TrackerTest
         TrackerAsset.Instance.Bridge = new TrackerAssetUnitTests.TesterBridge();
         storage = (IDataStorage) TrackerAsset.Instance.Bridge;
         TrackerAsset.Instance.StrictMode = true;
+        TrackerAsset.Instance.Clear();
         TrackerAsset.Instance.Start();
     }
 
