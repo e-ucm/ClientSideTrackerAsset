@@ -17,6 +17,8 @@
  */
 using System.Collections;
 using AssetPackage;
+using AssetPackage.Utils;
+using AssetPackage.Exceptions;
 
 public class AccessibleTracker : TrackerAsset.IGameObjectTracker
 {
@@ -47,11 +49,14 @@ public class AccessibleTracker : TrackerAsset.IGameObjectTracker
     /// <param name="reachableId">Reachable identifier.</param>
     public void Accessed(string reachableId)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(reachableId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Accessed),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(Accessible.Accessible.ToString().ToLower(), reachableId)
-        });
+            tracker.Trace(new TrackerAsset.TrackerEvent()
+            {
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Accessed),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(Accessible.Accessible.ToString().ToLower(), reachableId)
+            });
+        }
     }
 
     /// <summary>
@@ -61,11 +66,14 @@ public class AccessibleTracker : TrackerAsset.IGameObjectTracker
     /// <param name="type">Reachable type.</param>
     public void Accessed(string reachableId, Accessible type)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(reachableId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Accessed),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), reachableId)
-        });
+            tracker.Trace(new TrackerAsset.TrackerEvent()
+            {
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Accessed),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), reachableId)
+            });
+        }
     }
 
     /// <summary>
@@ -75,11 +83,14 @@ public class AccessibleTracker : TrackerAsset.IGameObjectTracker
     /// <param name="reachableId">Reachable identifier.</param>
     public void Skipped(string reachableId)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(reachableId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Skipped),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(Accessible.Accessible.ToString().ToLower(), reachableId)
-        });
+            tracker.Trace(new TrackerAsset.TrackerEvent()
+            {
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Skipped),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(Accessible.Accessible.ToString().ToLower(), reachableId)
+            });
+        }
     }
 
     /// <summary>
@@ -89,11 +100,14 @@ public class AccessibleTracker : TrackerAsset.IGameObjectTracker
     /// <param name="type">Reachable type.</param>
     public void Skipped(string reachableId, Accessible type)
     {
-        tracker.Trace(new TrackerAsset.TrackerEvent()
+        if (TrackerAssetUtils.check<TargetXApiException>(reachableId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Skipped),
-            Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), reachableId)
-        });
+            tracker.Trace(new TrackerAsset.TrackerEvent()
+            {
+                Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Skipped),
+                Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), reachableId)
+            });
+        }
     }
 
 
