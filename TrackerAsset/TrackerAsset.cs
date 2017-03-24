@@ -16,6 +16,9 @@
  * limitations under the License.
  */
 
+#define ASYNC
+//#undef ASYNC
+
 namespace AssetPackage
 {
     using AssetPackage;
@@ -26,6 +29,9 @@ namespace AssetPackage
     using System.ComponentModel;
     using System.Text.RegularExpressions;
     using SimpleJSON;
+#if ASYNC
+    using System.Threading;
+#endif
 
     [Obsolete("Use TrackerAsset instead")]
     public class Tracker
@@ -50,9 +56,18 @@ namespace AssetPackage
     /// </summary>
     public class TrackerAsset : BaseAsset
     {
-        #region Fields
+#region Fields
 
         public static DateTime START_DATE = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+#if ASYNC
+        readonly object flushLockObject = new object();
+        private Thread flushThread;
+#endif
+        /// <summary>
+        /// True when the thread must exit.
+        /// </summary>
+        private bool exit = false;
 
         /// <summary>
         /// The RegEx to extract a JSON Object. Used to extract 'actor'.
@@ -153,7 +168,7 @@ namespace AssetPackage
         /// <summary>
         /// The queue of TrackerEvents to Send.
         /// </summary>
-        private Queue<TrackerEvent> queue = new Queue<TrackerEvent>();
+        private ConcurrentQueue<TrackerEvent> queue = new ConcurrentQueue<TrackerEvent>();
 
         /// <summary>
         /// Options for controlling the operation.
@@ -165,7 +180,7 @@ namespace AssetPackage
         /// </summary>
         private Dictionary<string, System.Object> extensions = new Dictionary<string, System.Object>();
 
-        #region SubTracker Fields
+#region SubTracker Fields
 
         /// <summary>
         /// Instance of AccessibleTracker
@@ -187,11 +202,11 @@ namespace AssetPackage
         /// </summary>
         private GameObjectTracker gameobjecttracer;
 
-        #endregion SubTracker Fields
+#endregion SubTracker Fields
 
-        #endregion Fields
+#endregion Fields
 
-        #region Constructors
+#region Constructors
 
         /// <summary>
         /// Explicit static constructor tells # compiler not to mark type as
@@ -231,9 +246,9 @@ namespace AssetPackage
             }
         }
 
-        #endregion Constructors
+#endregion Constructors
 
-        #region Enumerations
+#region Enumerations
 
         /// <summary>
         /// Values that represent events.
@@ -358,9 +373,9 @@ namespace AssetPackage
             Progress
         }
 
-        #endregion Enumerations
+#endregion Enumerations
 
-        #region Properties
+#region Properties
 
         /// <summary>
         /// Visible when reflecting.
@@ -441,7 +456,7 @@ namespace AssetPackage
             set;
         }
 
-        #region SubTracker Properties
+#region SubTracker Properties
 
         /// <summary>
         /// Access point for Accessible Traces generation
@@ -547,11 +562,11 @@ namespace AssetPackage
             get { return GameObject; }
         }
 
-        #endregion SubTracker Properties
+#endregion SubTracker Properties
 
-        #endregion Properties
+#endregion Properties
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Checks the health of the UCM Tracker.
@@ -586,17 +601,51 @@ namespace AssetPackage
         /// </summary>
         public void Flush()
         {
+#if ASYNC
+            // If its waiting for flush, lets wake it up
+            if (flushThread.IsAlive)
+            {
+                lock (flushLockObject)
+                {
+                    Monitor.Pulse(flushLockObject);
+                }
+            }
+#else
             if (!Connected)
             {
                 Log(Severity.Verbose, "Not connected yet, Can't flush.");
-
-                // Start();
             }
             else
             {
                 ProcessQueue();
             }
+#endif
         }
+
+#if ASYNC
+        /// <summary>
+        /// Real flushes (to be called from the thread)
+        /// </summary>
+        private void DoFlush()
+        {
+            lock (flushLockObject)
+            {
+                while (!exit)
+                {
+                    Monitor.Wait(flushLockObject);
+
+                    if (!Connected)
+                    {
+                        Log(Severity.Verbose, "Not connected yet, Can't flush.");
+                    }
+                    else
+                    {
+                        ProcessQueue();
+                    }
+                }
+            }
+        }
+#endif
 
         /// <summary>
         /// Flushes the queue.
@@ -798,6 +847,28 @@ namespace AssetPackage
                     }
                     break;
             }
+#if ASYNC
+            if (flushThread == null || !flushThread.IsAlive)
+            {
+                exit = false;
+                flushThread = new Thread(new ThreadStart(DoFlush));
+                flushThread.Name = System.DateTime.Now.ToString();
+                flushThread.Start();
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Exit the tracker before closing to guarantee the thread closing.
+        /// </summary>
+        public void Exit()
+        {
+            exit = true;
+            Flush();
+#if ASYNC
+            flushThread.Join();
+            flushThread = null;
+#endif
         }
 
         /// <summary>
@@ -1071,7 +1142,7 @@ namespace AssetPackage
             }
         }
 
-        #region Extension Methods
+#region Extension Methods
 
         /// <summary>
 		/// Sets if the following trace has been a success, including this value to the extensions.
@@ -1251,11 +1322,11 @@ namespace AssetPackage
             }
         }
 
-        #endregion Extension Methods
+#endregion Extension Methods
 
-        #endregion Methods
+#endregion Methods
 
-        #region Nested Types
+#region Nested Types
 
         /// <summary>
         /// Interface that subtrackers must implement.
@@ -1280,15 +1351,15 @@ namespace AssetPackage
         /// </summary>
         public class TrackerEvent
         {
-            #region Fields
+#region Fields
                 private static Dictionary<string, string> verbIds;
 
                 private static Dictionary<string, string> objectIds;
 
                 private static Dictionary<string, string> extensionIds;
-            #endregion Fields
+#endregion Fields
 
-            #region Constructors
+#region Constructors
 
             public TrackerEvent()
             {
@@ -1296,9 +1367,9 @@ namespace AssetPackage
                 this.Result = new TraceResult();
             }
 
-            #endregion Constructors
+#endregion Constructors
 
-            #region Properties
+#region Properties
 
             private static Dictionary<string, string> VerbIDs
             {
@@ -1424,9 +1495,9 @@ namespace AssetPackage
             /// </value>
             public double TimeStamp { get; private set; }
 
-            #endregion Properties
+#endregion Properties
 
-            #region Methods
+#region Methods
 
             /// <summary>
             /// Converts this object to a CSV Item.
@@ -1554,9 +1625,9 @@ namespace AssetPackage
                 return true;
             }
 
-            #endregion Methods
+#endregion Methods
 
-            #region Nested Types
+#region Nested Types
 
             /// <summary>
             /// Class for Target storage.
@@ -2013,9 +2084,9 @@ namespace AssetPackage
                 }
             }
 
-            #endregion Nested Types
+#endregion Nested Types
         }
 
-        #endregion Nested Types
+#endregion Nested Types
     }
 }
