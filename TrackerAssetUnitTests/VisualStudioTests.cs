@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2016 Open University of the Netherlands
+ * Copyright 2016 Open University of the Netherlands and Universidad Complutense de Madrid
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// ############################################################################
+// ######### THIS TESTS ONLY WORK WHEN TRAKCER IS IN SYNCHRONOUS MODE #########
+// ############################################################################
+
 namespace TrackerTests
 {
     using System;

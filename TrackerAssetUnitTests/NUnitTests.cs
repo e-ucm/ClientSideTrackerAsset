@@ -1,4 +1,26 @@
-﻿using NUnit.Framework;
+﻿/*
+ * Copyright 2017 e-UCM research group. Universidad Complutense de Madrid
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * This project has received funding from the European Union’s Horizon
+ * 2020 research and innovation programme under grant agreement No 644187.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// ############################################################################
+// ######### THIS TESTS ONLY WORK WHEN TRAKCER IS IN SYNCHRONOUS MODE #########
+// ############################################################################
+
+using NUnit.Framework;
 using System.Collections.Generic;
 using System;
 using AssetPackage;
@@ -744,6 +766,9 @@ public class TrackerTest
     private void CheckCSVStoredTrace(string trace)
     {
         string[] stringSeparators = new string[] { "\r\n" };
+
+        while (!storage.Exists(settings.LogFile)) ;
+
         string[] lines = storage.Load(settings.LogFile).Split(stringSeparators, StringSplitOptions.None);
 
         string traceWithoutTimestamp = removeTimestamp(lines[lines.Length - 2]);
