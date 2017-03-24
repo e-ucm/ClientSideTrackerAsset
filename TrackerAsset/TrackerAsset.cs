@@ -622,6 +622,7 @@ namespace AssetPackage
         /// </returns>
         public Boolean Login(string username, string password)
         {
+            bool logged = false;
             Dictionary<string, string> headers = new Dictionary<string, string>();
 
             headers.Add("Content-Type", "application/json");
@@ -642,17 +643,31 @@ namespace AssetPackage
                     }
                     Log(Severity.Information, "Token= {0}", settings.UserToken);
 
-                    Connected = true;
+                    logged = true;
                 }
             }
             else
             {
+                logged = false;
                 Log(Severity.Error, "Request Error: {0}-{1}", response.responseCode, response.responsMessage);
-
-                Connected = false;
             }
 
-            return Connected;
+            return logged;
+        }
+
+        /// <summary>
+        /// Login with an Anonymous PlayerId
+        /// </summary>
+        ///
+        /// <param name="anonymousId"> The playerId of the anonymous player </param>
+        ///
+        /// <returns>
+        /// true if it succeeds, false if it fails.
+        /// </returns>
+        public Boolean Login(string anonymousId)
+        {
+            this.settings.PlayerId = anonymousId;
+            return true;
         }
 
         /// <summary>
@@ -692,16 +707,21 @@ namespace AssetPackage
                 case StorageTypes.net:
                     Dictionary<string, string> headers = new Dictionary<string, string>();
 
+                    string body = String.Empty;
+
                     //! The UserToken might get swapped for a better one during response
                     //! processing. 
                     if (!String.IsNullOrEmpty(settings.UserToken))
                         headers["Authorization"] = String.Format("Bearer {0}", settings.UserToken);
                     else if (!String.IsNullOrEmpty(settings.PlayerId))
-                        headers["Authorization"] = String.Format("a:{0}", settings.PlayerId);
-                    else
-                        headers["Authorization"] = String.Format("a:");
+                    {
+                        headers.Add("Content-Type", "application/json");
+                        headers.Add("Accept", "application/json");
 
-                    RequestResponse response = IssueRequest(String.Format("proxy/gleaner/collector/start/{0}", settings.TrackingCode), "POST", headers, String.Empty);
+                        body = "{\"anonymous\" : \"" + settings.PlayerId + "\"}";
+                    }
+
+                    RequestResponse response = IssueRequest(String.Format("proxy/gleaner/collector/start/{0}", settings.TrackingCode), "POST", headers, body);
 
                     if (response.ResultAllowed)
                     {
