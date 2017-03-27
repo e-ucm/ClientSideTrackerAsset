@@ -1041,6 +1041,7 @@ namespace AssetPackage
                 List<string> sb = new List<string>();
 
                 UInt32 cnt = settings.BatchSize == 0 ? UInt32.MaxValue : settings.BatchSize;
+                String rawData = String.Empty;
 
                 while (queue.Count > 0 && cnt > 0)
                 {
@@ -1063,6 +1064,9 @@ namespace AssetPackage
                             sb.Add(item.ToCsv());
                             break;
                     }
+
+                    if (settings.BackupStorage)
+                        rawData += item.ToCsv() + "\r\n";
                 }
 
                 String data = String.Empty;
@@ -1134,6 +1138,18 @@ namespace AssetPackage
                         }
 
                         break;
+                }
+
+                if (settings.BackupStorage)
+                {
+                    IDataStorage storage = getInterface<IDataStorage>();
+
+                    if (storage != null)
+                    {
+                        String previous = storage.Exists(settings.BackupFile) ? storage.Load(settings.BackupFile) : String.Empty;
+#warning TODO Add Append() to IDataStorage using File.AppendAllText().
+                        storage.Save(settings.BackupFile, previous + rawData);
+                    }
                 }
             }
             else

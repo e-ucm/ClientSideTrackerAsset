@@ -35,8 +35,10 @@ namespace AssetPackage
             Port = 3000;
             Secure = false;
             BatchSize = 2;
-            //LogFile = "TrackerAsset.log";
-            LogFile = Math.Round(System.DateTime.Now.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds).ToString() + ".log";
+            string timestamp = Math.Round(System.DateTime.Now.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds).ToString();
+            LogFile = timestamp + ".log";
+            BackupStorage = true;
+            BackupFile = timestamp + "_backup.log";
         }
 
         /// <summary>
@@ -149,6 +151,19 @@ namespace AssetPackage
         }
 
         /// <summary>
+        /// Save in Backup Storage
+        /// </summary>
+        ///
+        /// <value>
+        /// If true, backup storage is enabled.
+        /// </value>
+        public bool BackupStorage
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the trace format.
         /// </summary>
         ///
@@ -191,5 +206,17 @@ namespace AssetPackage
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the log's backup file.
+        /// </summary>
+        ///
+        /// <value>
+        /// The log file.
+        /// </value>
+        public String BackupFile
+        {
+            get;
+            set;
+        }
     }
 }
