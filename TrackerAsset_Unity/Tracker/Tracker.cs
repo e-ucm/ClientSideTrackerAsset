@@ -20,10 +20,12 @@
 /// </summary>
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using SimpleJSON;
 using System;
 using System.IO;
+using System.Threading;
 
 namespace RAGE.Analytics
 {
@@ -93,7 +95,7 @@ namespace RAGE.Analytics
 				Secure = splitted[0] == "https:",
 				StorageType = storage,
 				TraceFormat = format,
-				BatchSize = 10
+				BackupStorage = rawCopy
 			};
 
 			TrackerAsset.Instance.Bridge = new UnityBridge();
@@ -107,10 +109,22 @@ namespace RAGE.Analytics
 		{
 			if (!String.IsNullOrEmpty (user))
 				TrackerAsset.Instance.Login (user, pass);
-			
+
 			TrackerAsset.Instance.Start ();
 			this.nextFlush = flushInterval;
 			UnityEngine.Object.DontDestroyOnLoad (this);
+		}
+
+		void OnApplicationQuit(){
+			// We start the thread for a final
+			ProcessThreadCollection currentThreads = Process.GetCurrentProcess().Threads;
+
+			foreach (ProcessThread thread in currentThreads)    
+			{
+				UnityEngine.Debug.Log ("Thread: " + thread.Id + " - " + thread.StartTime);
+			}
+			TrackerAsset.Instance.Exit ();
+			UnityEngine.Debug.Log ("Fin");
 		}
 
 		// <summary>
