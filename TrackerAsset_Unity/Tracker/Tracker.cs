@@ -48,8 +48,8 @@ namespace RAGE.Analytics
 		public string trackingCode;
 		public Boolean debug = false;
 
-		public string user;
-		public string pass;
+		public string username;
+		public string password;
 
 		public static TrackerAsset T
 		{
@@ -107,8 +107,8 @@ namespace RAGE.Analytics
 		/// </summary>
 		public void Start ()
 		{
-			if (!String.IsNullOrEmpty (user))
-				TrackerAsset.Instance.Login (user, pass);
+			if (!String.IsNullOrEmpty (username))
+				TrackerAsset.Instance.Login (username, password);
 
 			TrackerAsset.Instance.Start ();
 			this.nextFlush = flushInterval;
