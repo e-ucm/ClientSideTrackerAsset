@@ -55,14 +55,14 @@ namespace TrackerTests
 
         private IDataStorage storage;
 
-        private TrackerAsset.TrackerEvent trace01 = new TrackerAsset.TrackerEvent()
+        private TrackerAsset.TrackerEvent trace01 = new TrackerAsset.TrackerEvent(TrackerAsset.Instance)
         {
 
             Target = new TrackerAsset.TrackerEvent.TraceObject(GameObjectTracker.TrackedGameObject.GameObject.ToString().ToLower(), "ObjectID"),
             Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Accessed)
         };
 
-        private TrackerAsset.TrackerEvent trace02 = new TrackerAsset.TrackerEvent()
+        private TrackerAsset.TrackerEvent trace02 = new TrackerAsset.TrackerEvent(TrackerAsset.Instance)
         {
 
             Target = new TrackerAsset.TrackerEvent.TraceObject(CompletableTracker.Completable.Game.ToString().ToLower(), "ObjectID2"),
@@ -74,7 +74,7 @@ namespace TrackerTests
             }
         };
 
-        private TrackerAsset.TrackerEvent trace03 = new TrackerAsset.TrackerEvent()
+        private TrackerAsset.TrackerEvent trace03 = new TrackerAsset.TrackerEvent(TrackerAsset.Instance)
         {
 
             Target = new TrackerAsset.TrackerEvent.TraceObject(AccessibleTracker.Accessible.Zone.ToString().ToLower(), "ObjectID3"),
@@ -226,7 +226,7 @@ namespace TrackerTests
             Assert.AreEqual(tracejson.Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/serious-game");
-            Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
+            Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/initialized");
             Assert.AreEqual(tracejson["result"].Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
             Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 0.123f);
@@ -297,7 +297,7 @@ namespace TrackerTests
             Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 5);
             Assert.AreEqual(tracejson["object"]["id"].Value, "ObjectID2");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/serious-game");
-            Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
+            Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/initialized");
             Assert.AreEqual(new List<JSONNode>(tracejson["result"].Children).Count, 2);
             Assert.AreEqual(tracejson["result"]["response"].Value, "TheResponse");
             Assert.AreEqual(tracejson["result"]["score"]["raw"].AsFloat, 0.123f);
@@ -547,7 +547,7 @@ namespace TrackerTests
             Assert.AreEqual(new List<JSONNode>(tracejson.Children).Count, 4);
             Assert.AreEqual(tracejson["object"]["id"].Value, "CompletableID");
             Assert.AreEqual(tracejson["object"]["definition"]["type"].Value, "https://w3id.org/xapi/seriousgames/activity-types/quest");
-            Assert.AreEqual(tracejson["verb"]["id"].Value, "https://w3id.org/xapi/adb/verbs/initialized");
+            Assert.AreEqual(tracejson["verb"]["id"].Value, "http://adlnet.gov/expapi/verbs/initialized");
         }
 
         /// <summary>
