@@ -108,14 +108,19 @@ namespace AssetPackage
         /// <summary>
         /// The instance.
         /// </summary>
-        static readonly TrackerAsset _instance = new TrackerAsset();
+        static TrackerAsset _instance;
+
+        /// <summary>
+        /// The instance.
+        /// </summary>
+        public TrackerAssetUtils Utils { get; set; }
 
         /// <summary>
         /// Identifier for the object.
         /// 
         /// Extracted from JSON inside Success().
         /// </summary>
-        private static String ObjectId = String.Empty;
+        private String ObjectId = String.Empty;
 
         /// <summary>
         /// Tracker StrictMode
@@ -209,20 +214,11 @@ namespace AssetPackage
 #region Constructors
 
         /// <summary>
-        /// Explicit static constructor tells # compiler not to mark type as
-        /// beforefieldinit.
-        /// </summary>
-        static TrackerAsset()
-        {
-            // Nothing
-        }
-
-        /// <summary>
         /// Prevents a default instance of the TrackerAsset class from being created.
         /// </summary>
-        private TrackerAsset()
-            : base()
+        public TrackerAsset() : base()
         {
+            this.Utils = new TrackerAssetUtils(this);
             settings = new TrackerAssetSettings();
 
             if (LoadSettings(SettingsFileName))
@@ -373,9 +369,9 @@ namespace AssetPackage
             Progress
         }
 
-#endregion Enumerations
+        #endregion Enumerations
 
-#region Properties
+        #region Properties
 
         /// <summary>
         /// Visible when reflecting.
@@ -388,6 +384,8 @@ namespace AssetPackage
         {
             get
             {
+                if (_instance == null)
+                    _instance = new TrackerAsset();
                 return _instance;
             }
         }
@@ -450,7 +448,7 @@ namespace AssetPackage
         /// 
         /// Extracted from JSON inside Success().
         /// </summary>
-        private static JSONNode ActorObject
+        private JSONNode ActorObject
         {
             get;
             set;
@@ -794,7 +792,7 @@ namespace AssetPackage
                             Log(Severity.Information, "PlayerId= {0}", settings.PlayerId);
                         }
 
-                        // Extract PlayerId.
+                        // Extract Session number.
                         //
                         if (jsonSession.IsMatch(response.body))
                         {
@@ -914,7 +912,7 @@ namespace AssetPackage
 
             for (int i = 0; i < values.Length; i++)
             {
-                if (!TrackerAssetUtils.check<TraceException>(values[i], "Tracker: Trace param " + i + " is null or empty, ignoring trace.", "Tracker: Trace param " + i + " is null or empty"))
+                if (!Utils.check<TraceException>(values[i], "Tracker: Trace param " + i + " is null or empty, ignoring trace.", "Tracker: Trace param " + i + " is null or empty"))
                     return;
             }
             //}
@@ -945,13 +943,13 @@ namespace AssetPackage
         {
             bool trace = true;
 
-            trace &= TrackerAssetUtils.check<TraceException>(verb, "Tracker: Trace verb can't be null, ignoring. ", "Tracker: Trace verb can't be null.");
-            trace &= TrackerAssetUtils.check<TraceException>(target_type, "Tracker: Trace Target type can't be null, ignoring. ", "Tracker: Trace Target type can't be null.");
-            trace &= TrackerAssetUtils.check<TraceException>(target_id, "Tracker: Trace Target ID can't be null, ignoring. ", "Tracker: Trace Target ID can't be null.");
+            trace &= Utils.check<TraceException>(verb, "Tracker: Trace verb can't be null, ignoring. ", "Tracker: Trace verb can't be null.");
+            trace &= Utils.check<TraceException>(target_type, "Tracker: Trace Target type can't be null, ignoring. ", "Tracker: Trace Target type can't be null.");
+            trace &= Utils.check<TraceException>(target_id, "Tracker: Trace Target ID can't be null, ignoring. ", "Tracker: Trace Target ID can't be null.");
 
             if (trace)
             {
-                Trace(new TrackerEvent(){
+                Trace(new TrackerEvent(this){
                     Event = new TrackerEvent.TraceVerb(verb),
                     Target = new TrackerEvent.TraceObject(target_type, target_id)
                 });
@@ -1239,8 +1237,18 @@ namespace AssetPackage
         /// <param name="health">Health.</param>
         public void setHealth(float health)
         {
-            if (TrackerAssetUtils.check<ValueExtensionException>(health, "Tracker: Health cant be null, ignoring.", "Tracker: Health cant be null."))
+            if (Utils.check<ValueExtensionException>(health, "Tracker: Health cant be null, ignoring.", "Tracker: Health cant be null."))
                 addExtension(Extension.Health.ToString().ToLower(), health);
+        }
+
+        /// <summary>
+        /// Adds a variable to the extensions.
+        /// </summary>
+        /// <param name="id">Identifier.</param>
+        /// <param name="value">Value.</param>
+        public void setVar(string id, Dictionary<string,bool> value) 
+        {
+            addExtension(id, value);
         }
 
         /// <summary>
@@ -1329,7 +1337,7 @@ namespace AssetPackage
 
         private void addExtension(string key, System.Object value)
         {
-            if (TrackerAssetUtils.checkExtension(key, value))
+            if (Utils.checkExtension(key, value))
             {
                 if (extensions.ContainsKey(key))
                     extensions[key] = value;
@@ -1373,12 +1381,19 @@ namespace AssetPackage
                 private static Dictionary<string, string> objectIds;
 
                 private static Dictionary<string, string> extensionIds;
+
+                private TraceVerb verb;
+
+                private TraceObject target;
+
+                private TraceResult result;
 #endregion Fields
 
 #region Constructors
 
-            public TrackerEvent()
+            public TrackerEvent(TrackerAsset tracker)
             {
+                this.Tracker = tracker;
                 this.TimeStamp = Math.Round(System.DateTime.Now.ToUniversalTime().Subtract(START_DATE).TotalMilliseconds);
                 this.Result = new TraceResult();
             }
@@ -1395,7 +1410,7 @@ namespace AssetPackage
                     {
                         verbIds = new Dictionary<string, string>()
                         {
-                            { TrackerAsset.Verb.Initialized.ToString().ToLower(), "https://w3id.org/xapi/adb/verbs/initialized"},
+                            { TrackerAsset.Verb.Initialized.ToString().ToLower(), "http://adlnet.gov/expapi/verbs/initialized"},
                             { TrackerAsset.Verb.Progressed.ToString().ToLower(), "http://adlnet.gov/expapi/verbs/progressed"},
                             { TrackerAsset.Verb.Completed.ToString().ToLower(), "http://adlnet.gov/expapi/verbs/completed"},
                             { TrackerAsset.Verb.Accessed.ToString().ToLower(), "https://w3id.org/xapi/seriousgames/verbs/accessed"},
@@ -1473,6 +1488,15 @@ namespace AssetPackage
             }
 
             /// <summary>
+            /// Gets or sets the Tracker
+            /// </summary>
+            ///
+            /// <value>
+            /// The Tracker.
+            /// </value>
+            public TrackerAsset Tracker { get; set; }
+
+            /// <summary>
             /// Gets or sets the event.
             /// </summary>
             ///
@@ -1480,7 +1504,16 @@ namespace AssetPackage
             /// The event.
             /// </value>
             [DefaultValue("")]
-            public TraceVerb Event { get; set; }
+            public TraceVerb Event
+            {
+                get { return verb; }
+                set
+                {
+                    this.verb = value;
+                    this.verb.Parent = this;
+                    this.verb.isValid();
+                }
+            }
 
             /// <summary>
             /// Gets or sets the Target for the.
@@ -1490,7 +1523,14 @@ namespace AssetPackage
             /// The target.
             /// </value>
             [DefaultValue("")]
-            public TraceObject Target { get; set; }
+            public TraceObject Target {
+                get { return target; }
+                set
+                {
+                    this.target = value;
+                    this.target.Parent = this;
+                }
+            }
 
             /// <summary>
             /// Gets or sets the Result for the.
@@ -1500,7 +1540,15 @@ namespace AssetPackage
             /// The Result.
             /// </value>
             [DefaultValue("")]
-            public TraceResult Result { get; set; }
+
+            public TraceResult Result {
+                get { return result; }
+                set
+                {
+                    this.result = value;
+                    this.result.Parent = this;
+                }
+            }
 
             /// <summary>
             /// Gets the Date/Time of the time stamp.
@@ -1543,7 +1591,7 @@ namespace AssetPackage
             {
                 JSONClass json = new JSONClass();
 
-                json.Add("actor", (ActorObject == null) ? JSONNode.Parse("{}") : ActorObject);
+                json.Add("actor", (Tracker.ActorObject == null) ? JSONNode.Parse("{}") : Tracker.ActorObject);
                 json.Add("event", Event.ToJson());
                 json.Add("target", Target.ToJson());
 
@@ -1585,7 +1633,7 @@ namespace AssetPackage
             {
                 JSONClass json = new JSONClass();
 
-                json.Add("actor", (ActorObject == null) ? JSONNode.Parse("{}") : ActorObject);
+                json.Add("actor", (Tracker.ActorObject == null) ? JSONNode.Parse("{}") : Tracker.ActorObject);
                 json.Add("verb", Event.ToXapi());
                 json.Add("object", Target.ToXapi());
 
@@ -1650,16 +1698,35 @@ namespace AssetPackage
             /// </summary>
             public class TraceObject
             {
+                string _type;
+                string _id;
+
+                public TrackerEvent Parent { get; internal set; }
+
                 public string Type
                 {
-                    get;
-                    set;
+                    get
+                    {
+                        return _type;
+                    }
+                    set
+                    {
+                        if(Parent == null || Parent.Tracker.Utils.check<TargetXApiException>(value, "xAPI Exception: Target Type is null or empty. Ignoring.", "xAPI Exception: Target Type can't be null or empty."))
+                            _type = value;
+                    }
                 }
 
                 public string ID
                 {
-                    get;
-                    set;
+                    get
+                    {
+                        return _id;
+                    }
+                    set
+                    {
+                        if (Parent == null || Parent.Tracker.Utils.check<TargetXApiException>(value, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
+                            _id = value;
+                    }
                 }
 
                 public JSONClass Definition
@@ -1670,16 +1737,9 @@ namespace AssetPackage
 
                 public TraceObject(string type, string id)
                 {
-                    bool check = true;
-
-                    check &= TrackerAssetUtils.check<TargetXApiException>(type, "xAPI Exception: Target Type is null or empty. Ignoring.", "xAPI Exception: Target Type can't be null or empty.");
-                    check &= TrackerAssetUtils.check<TargetXApiException>(id, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty.");
-
-                    if (check)
-                    {
-                        this.Type = type;
-                        this.ID = id;
-                    }
+                    
+                    this.Type = type;
+                    this.ID = id;
                 }
 
                 public string ToCsv()
@@ -1694,15 +1754,15 @@ namespace AssetPackage
                     if(!ObjectIDs.TryGetValue(Type, out typeKey))
                     {
                         typeKey = Type;
-                        if (TrackerAsset.Instance.StrictMode)
+                        if(Parent.Tracker.StrictMode)
                             throw (new TargetXApiException("Tracker-xAPI: Unknown definition for target type: " + Type));
                         else
-                            TrackerAsset.Instance.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for target type: " + Type);
+                            Parent.Tracker.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for target type: " + Type);
                     }
 
                     JSONClass obj = new JSONClass(), definition = new JSONClass();
 
-                    obj["id"] = ((ActorObject!=null) ? ObjectId : "") + ID;
+                    obj["id"] = ((Parent.Tracker.ActorObject != null) ? Parent.Tracker.ObjectId : "") + ID;
                     definition["type"] = typeKey;
 
                     obj.Add("definition", definition);
@@ -1723,15 +1783,15 @@ namespace AssetPackage
                     if (!ObjectIDs.TryGetValue(Type, out typeKey))
                     {
                         typeKey = Type;
-                        if (TrackerAsset.Instance.StrictMode)
+                        if (Parent.Tracker.StrictMode)
                             throw (new TargetXApiException("Tracker-xAPI: Unknown definition for target type: " + Type));
                         else
-                            TrackerAsset.Instance.Log(Severity.Warning, "Tracker-xAPI: Unknown definition for target type: " + Type);
+                            Parent.Tracker.Log(Severity.Warning, "Tracker-xAPI: Unknown definition for target type: " + Type);
                     }
 
                     JSONClass obj = new JSONClass(), definition = new JSONClass();
 
-                    obj["id"] = ((ActorObject != null) ? ObjectId : "") + ID;
+                    obj["id"] = ((Parent.Tracker.ActorObject != null) ? Parent.Tracker.ObjectId : "") + ID;
                     definition["type"] = typeKey;
 
                     obj.Add("definition", definition);
@@ -1750,6 +1810,8 @@ namespace AssetPackage
             /// </summary>
             public class TraceVerb
             {
+                public TrackerEvent Parent { get; internal set; }
+
                 private string sverb = "";
                 private Verb vverb;
 
@@ -1765,11 +1827,11 @@ namespace AssetPackage
                             sverb = value.ToLower();
                             this.vverb = v;
                         }
-                        else {
-                            if (TrackerAsset.Instance.StrictMode)
+                        else if(Parent != null) {
+                            if (Parent.Tracker.StrictMode)
                                 throw (new VerbXApiException("Tracker-xAPI: Unknown definition for verb: " + value));
                             else
-                                TrackerAsset.Instance.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for verb: " + value);
+                                Parent.Tracker.Log(Severity.Warning,"Tracker-xAPI: Unknown definition for verb: " + value);
                         }
                     }
                 }
@@ -1840,7 +1902,11 @@ namespace AssetPackage
 
                 public bool isValid()
                 {
-                    return TrackerAssetUtils.quickCheck(sverb);
+                    bool check = true;
+                    if (Parent != null)
+                        sVerb = sVerb;
+
+                    return check && TrackerAssetUtils.quickCheck(sverb);
                 }
             }
 
@@ -1849,6 +1915,8 @@ namespace AssetPackage
             /// </summary>
             public class TraceResult
             {
+                public TrackerEvent Parent { get; internal set; }
+
                 private int success = -1;
                 private int completion = -1;
                 private float score = float.NaN;
@@ -1871,7 +1939,7 @@ namespace AssetPackage
                     get { return res; }
                     set
                     {
-                        if (TrackerAssetUtils.check<ValueExtensionException>(value, "xAPI extension: response Empty or null. Ignoring", "xAPI extension: response can't be empty or null"))
+                        if (Parent == null || Parent.Tracker.Utils.check<ValueExtensionException>(value, "xAPI extension: response Empty or null. Ignoring", "xAPI extension: response can't be empty or null"))
                             res = value;
                     }
                 }
@@ -1884,7 +1952,7 @@ namespace AssetPackage
                     } 
                     set
                     {
-                        if (TrackerAssetUtils.check<ValueExtensionException>(value, "xAPI extension: score null or NaN. Ignoring", "xAPI extension: score can't be null or NaN."))
+                        if (Parent == null || Parent.Tracker.Utils.check<ValueExtensionException>(value, "xAPI extension: score null or NaN. Ignoring", "xAPI extension: score can't be null or NaN."))
                             score = value;
                     }
                 }
@@ -1926,13 +1994,23 @@ namespace AssetPackage
                             {
                                 if (extension.Value.GetType() == typeof(string))
                                     result += extension.Value.ToString().Replace(",", "\\,");
-                                else if(extension.Value.GetType() == typeof(float))
+                                else if (extension.Value.GetType() == typeof(float))
                                 {
-                                    result += ((float) extension.Value).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+                                    result += ((float)extension.Value).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
                                 }
                                 else if (extension.Value.GetType() == typeof(double))
                                 {
                                     result += ((double)extension.Value).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+                                }
+                                else if (extension.Value.GetType() == typeof(Dictionary<string,bool>))
+                                {
+                                    Dictionary<string, bool> map = (Dictionary<string, bool>)extension.Value;
+                                    string smap = "";
+                                    foreach(KeyValuePair<string,bool> t in map)
+                                    {
+                                        smap += t.Key + "=" + t.Value.ToString().ToLower() + "-";
+                                    }
+                                    result += smap.TrimEnd('-');
                                 }
                                 else
                                 {
@@ -1979,6 +2057,16 @@ namespace AssetPackage
                                 else if (extension.Value.GetType() == typeof(double))
                                 {
                                     extensions.Add(extension.Key, new JSONData((double) extension.Value));
+                                }
+                                else if (extension.Value.GetType() == typeof(Dictionary<string, bool>))
+                                {
+                                    Dictionary<string, bool> map = (Dictionary<string, bool>)extension.Value;
+                                    JSONClass emap = new JSONClass();
+                                    foreach (KeyValuePair<string, bool> t in map)
+                                    {
+                                        emap.Add(t.Key, new JSONData(t.Value));
+                                    }
+                                    extensions.Add(extension.Key, emap);
                                 }
                                 else
                                 {
@@ -2041,6 +2129,16 @@ namespace AssetPackage
                                 {
                                     extensions.Add(key, new JSONData((double)extension.Value));
                                 }
+                                else if (extension.Value.GetType() == typeof(Dictionary<string, bool>))
+                                {
+                                    Dictionary<string, bool> map = (Dictionary<string, bool>)extension.Value;
+                                    JSONClass emap = new JSONClass();
+                                    foreach (KeyValuePair<string, bool> t in map)
+                                    {
+                                        emap.Add(t.Key, new JSONData(t.Value));
+                                    }
+                                    extensions.Add(key, emap);
+                                }
                                 else
                                 {
                                     extensions.Add(key, new JSONData(extension.Value.ToString()));
@@ -2071,6 +2169,12 @@ namespace AssetPackage
                 public bool isValid()
                 {
                     bool valid = true;
+
+                    if (!String.IsNullOrEmpty(Response))
+                        this.Response = Response;
+
+                    if (!float.IsNaN(Score))
+                        this.Score = Score;
 
                     JSONClass result = new JSONClass();
 
