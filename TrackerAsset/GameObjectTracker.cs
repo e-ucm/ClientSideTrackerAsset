@@ -48,9 +48,9 @@ public class GameObjectTracker : TrackerAsset.IGameObjectTracker
     /// <param name="gameobjectId">Reachable identifier.</param>
     public void Interacted(string gameobjectId)
     {
-        if (TrackerAssetUtils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
+        if (tracker.Utils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            tracker.Trace(new TrackerAsset.TrackerEvent()
+            tracker.Trace(new TrackerAsset.TrackerEvent(tracker)
             {
                 Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Interacted),
                 Target = new TrackerAsset.TrackerEvent.TraceObject(TrackedGameObject.GameObject.ToString().ToLower(), gameobjectId)
@@ -64,9 +64,9 @@ public class GameObjectTracker : TrackerAsset.IGameObjectTracker
     /// <param name="gameobjectId">TrackedGameObject identifier.</param>
     public void Interacted(string gameobjectId, TrackedGameObject type)
     {
-        if (TrackerAssetUtils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
+        if (tracker.Utils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            tracker.Trace(new TrackerAsset.TrackerEvent()
+            tracker.Trace(new TrackerAsset.TrackerEvent(tracker)
             {
                 Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Interacted),
                 Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), gameobjectId)
@@ -81,9 +81,9 @@ public class GameObjectTracker : TrackerAsset.IGameObjectTracker
     /// <param name="gameobjectId">Reachable identifier.</param>
     public void Used(string gameobjectId)
     {
-        if (TrackerAssetUtils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
+        if (tracker.Utils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            tracker.Trace(new TrackerAsset.TrackerEvent()
+            tracker.Trace(new TrackerAsset.TrackerEvent(tracker)
             {
                 Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Used),
                 Target = new TrackerAsset.TrackerEvent.TraceObject(TrackedGameObject.GameObject.ToString().ToLower(), gameobjectId)
@@ -97,9 +97,9 @@ public class GameObjectTracker : TrackerAsset.IGameObjectTracker
     /// <param name="gameobjectId">TrackedGameObject identifier.</param>
     public void Used(string gameobjectId, TrackedGameObject type)
     {
-        if (TrackerAssetUtils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
+        if (tracker.Utils.check<TargetXApiException>(gameobjectId, "xAPI Exception: Target ID is null or empty. Ignoring.", "xAPI Exception: Target ID can't be null or empty."))
         {
-            tracker.Trace(new TrackerAsset.TrackerEvent()
+            tracker.Trace(new TrackerAsset.TrackerEvent(tracker)
             {
                 Event = new TrackerAsset.TrackerEvent.TraceVerb(TrackerAsset.Verb.Used),
                 Target = new TrackerAsset.TrackerEvent.TraceObject(type.ToString().ToLower(), gameobjectId)

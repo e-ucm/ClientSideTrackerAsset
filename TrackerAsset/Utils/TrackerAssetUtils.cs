@@ -6,7 +6,14 @@ namespace AssetPackage.Utils{
     using AssetPackage;
     using AssetPackage.Exceptions;
 
-    public static class TrackerAssetUtils{
+    public class TrackerAssetUtils{
+
+        TrackerAsset Tracker { get; set; }
+
+        public TrackerAssetUtils(TrackerAsset tracker)
+        {
+            this.Tracker = tracker;
+        }
 		
 		public static string[] parseCSV(string trace){
 			List<string> p = new List<string> ();
@@ -39,7 +46,7 @@ namespace AssetPackage.Utils{
         }
 
 
-        public static bool checkExtension(string key, System.Object value){
+        public bool checkExtension(string key, System.Object value){
 			return 
 				check<KeyExtensionException>(key, "Tracker: Extension key is null or empty. Ignored extension.", "Tracker: Extension key is null or empty.")
 				&&
@@ -53,7 +60,7 @@ namespace AssetPackage.Utils{
                 || (value.GetType() == typeof(float) && float.IsNaN((float)value)));
         }
 
-        public static bool check<T>(System.Object value, string message, string strict_message) where T : TrackerException{
+        public bool check<T>(System.Object value, string message, string strict_message) where T : TrackerException{
             bool r = quickCheck(value);
 
             if(!r)
@@ -62,7 +69,7 @@ namespace AssetPackage.Utils{
 			return r;
 		}
 
-		public static bool isFloat<T>(string value, string message, string strict_message, out float result) where T : TrackerException{
+		public bool isFloat<T>(string value, string message, string strict_message, out float result) where T : TrackerException{
 			if (!float.TryParse (value, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out result)) {
 				notify<T> (message, strict_message);
 				return false;
@@ -71,7 +78,7 @@ namespace AssetPackage.Utils{
 			}
 		}
 
-		public static bool isBool<T>(string value, string message, string strict_message, out bool result) where T : TrackerException{
+		public bool isBool<T>(string value, string message, string strict_message, out bool result) where T : TrackerException{
 			if (!bool.TryParse (value, out result)) {
 				notify<T> (message, strict_message);
 				return false;
@@ -80,11 +87,11 @@ namespace AssetPackage.Utils{
 			}
 		}
 
-		public static void notify<T>(string message, string strict_message) where T : TrackerException{
-			if (TrackerAsset.Instance.StrictMode) {
+		public void notify<T>(string message, string strict_message) where T : TrackerException{
+			if (Tracker.StrictMode) {
 				throw (T)Activator.CreateInstance (typeof(T), strict_message);
 			} else {
-				TrackerAsset.Instance.Log(Severity.Warning, message);
+				Tracker.Log(Severity.Warning, message);
 			}
 		}
 
